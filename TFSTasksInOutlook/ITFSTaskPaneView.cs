@@ -5,13 +5,13 @@ using System.Reactive;
 using System.Text;
 
 namespace TFSTasksInOutlook
-{
-  interface ITFSTaskPaneView
   {
+  interface ITFSTaskPaneView
+    {
     IObservable<Unit> OnConnectToTfs();
     IObservable<string> OnProjectSelected();
     IObservable<WorkItemInfo> OnTaskDoubleClicked();
 
     void SetTasksList(IEnumerable<WorkItemInfo> tasks);
+    }
   }
-}

@@ -10,39 +10,39 @@ using Microsoft.TeamFoundation.WorkItemTracking.Client;
 
 
 namespace TFSTasksInOutlook
-{
-  class TFSProxy
   {
-    public class TFSServerData
+  class TFSProxy
     {
-      public TFSServerData(string tfsUri, string[] tfsProjects)
+    public class TFSServerData
       {
+      public TFSServerData(string tfsUri, string[] tfsProjects)
+        {
         TfsUri = tfsUri;
         TfsProjects = tfsProjects;
+        }
+
+      public string TfsUri { get; private set; }
+      public string[] TfsProjects { get; private set; }
       }
 
-      public string   TfsUri { get; private set; }
-      public string[] TfsProjects { get; private set; }
-    }
-
     public TFSServerData GetNewTfsServer()
-    {
-      using (TeamProjectPicker tpp = new TeamProjectPicker(TeamProjectPickerMode.MultiProject, false))
       {
+      using (TeamProjectPicker tpp = new TeamProjectPicker(TeamProjectPickerMode.MultiProject, false))
+        {
         DialogResult result = tpp.ShowDialog();
         if (result == DialogResult.OK)
-        {
+          {
           System.Console.WriteLine("Selected Team Project Collection Uri: " + tpp.SelectedTeamProjectCollection.Uri);
           return new TFSServerData(
             tpp.SelectedTeamProjectCollection.Uri.ToString(),
             tpp.SelectedProjects.Select(p => p.Name).ToArray());
+          }
         }
-      }
       return null;
-    }
+      }
 
     public IEnumerable<WorkItemInfo> GetTasks(string s)
-    {
+      {
       TfsTeamProjectCollection tpc = new TfsTeamProjectCollection(new Uri(Properties.Settings.Default.TfsUri));
       WorkItemStore workItemStore = (WorkItemStore)tpc.GetService(typeof(WorkItemStore));
       WorkItemCollection queryResults = workItemStore.Query(
@@ -54,7 +54,7 @@ namespace TFSTasksInOutlook
 
       var tasks = new List<WorkItemInfo>();
       foreach (WorkItem wi in queryResults)
-      {
+        {
         tasks.Add(new WorkItemInfo()
         {
           Id = wi.Id,
@@ -62,8 +62,8 @@ namespace TFSTasksInOutlook
           CompletedWork = wi.Fields["Completed Work"].Value != null ? Convert.ToDouble(wi.Fields["Completed Work"].Value) : 0.0,
           ItemType = wi.Type.Name
         });
-      }
+        }
       return tasks;
+      }
     }
   }
-}
