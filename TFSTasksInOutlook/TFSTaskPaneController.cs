@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Text;
 
 namespace TFSTasksInOutlook
@@ -21,9 +23,12 @@ namespace TFSTasksInOutlook
     public TFSTaskPaneController(ITFSTaskPaneView paneView)
     {
       PaneView = paneView;
-
       paneView.OnConnectToTfs().Subscribe(_ => SelectNewTfsServer());
-      paneView.OnProjectSelected().Subscribe(s => PaneView.SetTasksList(tfsProxy.GetTasks(s)));
+      paneView.OnProjectSelected()
+        .ObserveOn(Scheduler.Default)
+        .Select(s => tfsProxy.GetTasks(s))
+        .ObserveOn(DispatcherScheduler.Current)
+        .Subscribe(r => PaneView.SetTasksList(r));
 
       paneView.OnTaskDoubleClicked().Subscribe(t =>
       {
@@ -31,7 +36,6 @@ namespace TFSTasksInOutlook
         minDate -= TimeSpan.FromDays(31);
 
         var expl = Globals.ThisAddIn.Application.ActiveExplorer();
-        var folder = expl.CurrentFolder as Microsoft.Office.Interop.Outlook.Folder;
         var view = expl.CurrentView as Microsoft.Office.Interop.Outlook.View;
         if (view.ViewType == Microsoft.Office.Interop.Outlook.OlViewType.olCalendarView)
           {
@@ -41,6 +45,7 @@ namespace TFSTasksInOutlook
 
           if (dstart > minDate && dend > minDate)
             {
+            var folder = expl.CurrentFolder as Microsoft.Office.Interop.Outlook.Folder;
             var appointment = folder.Items.Add("IPM.Appointment") as Microsoft.Office.Interop.Outlook.AppointmentItem;
             appointment.Subject = "#" + t.Id + " " + t.Title;
             appointment.Start = dstart;
