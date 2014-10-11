@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_Load">
+  <ribbon>
+    <tabs>
+      <tab idMso="TabCalendar">
+        <group id="DentsplyTools"
+               label="Dentsply">
+          <toggleButton id="DentsplyTools_TFSTasks"
+                  label="TFS Tasks"
+                  description="Allows you to drag-and-drop your TFS tasks to fill in the journal"
+                  size="large"
+                  getImage="Ribbon_GetImage"
+                  onAction="Ribbon_TFSTaskActivate" />
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>
