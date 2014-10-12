@@ -41,16 +41,18 @@ namespace TFSTasksInOutlook
       return null;
       }
 
-    public IEnumerable<WorkItemInfo> GetTasks(string s)
+    public IEnumerable<WorkItemInfo> GetTasks(WorkItemFilter s)
       {
       TfsTeamProjectCollection tpc = new TfsTeamProjectCollection(new Uri(Properties.Settings.Default.TfsUri));
       WorkItemStore workItemStore = (WorkItemStore)tpc.GetService(typeof(WorkItemStore));
-      WorkItemCollection queryResults = workItemStore.Query(
+      var q =
         @"Select [Id], [Title], [Completed Work] From WorkItems " +
-        @"Where ([Work Item Type] = 'Task' or [Work Item Type] = 'Bug') " +
-        @"And [System.TeamProject] = '" + s + "' And [System.AssignedTo] = @Me " +
-        @"And ([State] = 'Active' Or [State] = 'Resolved') " +
-        @"Order By [Work Item Type]");
+        @"Where " +
+        @"[System.TeamProject] = '" + s.Project + "' And [System.AssignedTo] = @Me " +
+        GetItemTypeFilter(s) +
+        _GetStateFilter(s) +
+        @"Order By [Work Item Type] ";
+      WorkItemCollection queryResults = workItemStore.Query(q);
 
       var tasks = new List<WorkItemInfo>();
       foreach (WorkItem wi in queryResults)
@@ -64,6 +66,30 @@ namespace TFSTasksInOutlook
         });
         }
       return tasks;
+      }
+
+    private string GetItemTypeFilter(WorkItemFilter s)
+      {
+      var filters = new List<string>();
+      if (s.ShowTasks) filters.Add("[Work Item Type] = 'Task'");
+      if (s.ShowBugs) filters.Add("[Work Item Type] = 'Bug'");
+
+      return filters.Count > 0
+        ? @"And (" + String.Join(" Or ", filters) + ") "
+        : "And ([Work Item Type] = 'Task' Or [Work Item Type] = 'Bug') ";
+      }
+
+    private string _GetStateFilter(WorkItemFilter s)
+      {
+      var filters = new List<string>();
+      if (s.ShowProposed) filters.Add("[State] = 'Proposed'");
+      if (s.ShowActive)   filters.Add("[State] = 'Active'");
+      if (s.ShowResolved) filters.Add("[State] = 'Resolved'");
+      if (s.ShowClosed)   filters.Add("[State] = 'Closed'");
+
+      return  filters.Count > 0
+        ? @"And (" + String.Join(" Or ", filters) + ") "
+        : "And [State] = 'Active' ";
       }
     }
   }

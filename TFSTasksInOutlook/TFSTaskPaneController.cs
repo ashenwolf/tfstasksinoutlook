@@ -9,26 +9,50 @@ namespace TFSTasksInOutlook
   {
   public class WorkItemInfo
     {
-    public long Id { get; set; }
+    public long   Id {get; set;}
     public string Title { get; set; }
     public double CompletedWork { get; set; }
     public string ItemType { get; set; }
     }
 
+  public class WorkItemFilter
+    {
+    public string Project { get; set; }
+    public bool ShowTasks { get; set; }
+    public bool ShowBugs { get; set; }
+    public bool ShowProposed { get; set; }
+    public bool ShowActive { get; set; }
+    public bool ShowResolved { get; set; }
+    public bool ShowClosed { get; set; }
+    }
+
   class TFSTaskPaneController
     {
     private TFSProxy tfsProxy = new TFSProxy();
-    private ITFSTaskPaneView PaneView;
+    private ITFSTaskPaneView paneView;
+    private int backgroundOperations;
 
-    public TFSTaskPaneController(ITFSTaskPaneView paneView)
+    public TFSTaskPaneController(ITFSTaskPaneView pane)
       {
-      PaneView = paneView;
+      paneView = pane;
+      backgroundOperations = 0;
+
+      _SubscribeObservables();
+      }
+
+    private void _SubscribeObservables()
+      {
       paneView.OnConnectToTfs().Subscribe(_ => SelectNewTfsServer());
+
       paneView.OnProjectSelected()
         .ObserveOn(Scheduler.Default)
         .Select(s => tfsProxy.GetTasks(s))
         .ObserveOn(DispatcherScheduler.Current)
-        .Subscribe(r => PaneView.SetTasksList(r));
+        .Subscribe(r =>
+          {
+            paneView.SetTasksList(r);
+            paneView.SetBusy(false);
+          });
 
       paneView.OnTaskDoubleClicked().Subscribe(t => _CreateItemInCalendar(t));
       }
@@ -49,7 +73,7 @@ namespace TFSTasksInOutlook
     private void _CreateItemInCalendar(WorkItemInfo item)
       {
       var minDate = DateTime.Today;
-      minDate -= TimeSpan.FromDays(31);
+      minDate -= TimeSpan.FromDays(365);
 
       var expl = Globals.ThisAddIn.Application.ActiveExplorer();
       var view = expl.CurrentView as Microsoft.Office.Interop.Outlook.View;

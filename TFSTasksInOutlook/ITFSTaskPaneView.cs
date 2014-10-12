@@ -9,9 +9,10 @@ namespace TFSTasksInOutlook
   interface ITFSTaskPaneView
     {
     IObservable<Unit> OnConnectToTfs();
-    IObservable<string> OnProjectSelected();
+    IObservable<WorkItemFilter> OnProjectSelected();
     IObservable<WorkItemInfo> OnTaskDoubleClicked();
 
     void SetTasksList(IEnumerable<WorkItemInfo> tasks);
+    void SetBusy(bool busy);
     }
   }

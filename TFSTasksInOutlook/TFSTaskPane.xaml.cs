@@ -24,8 +24,17 @@ namespace TFSTasksInOutlook
   public partial class TFSTaskPane : UserControl, ITFSTaskPaneView
     {
     private IObservable<Unit> onConnectToTfs;
-    private IObservable<string> onProjectSelected;
+    private IObservable<WorkItemFilter> onProjectSelected;
     private IObservable<WorkItemInfo> onTaskDoubleClicked;
+
+    public static readonly DependencyProperty BusyProperty =
+      DependencyProperty.Register("Busy", typeof(bool), typeof(TFSTaskPane));
+
+    public bool Busy
+      {
+      get { return (bool)this.GetValue(BusyProperty); }
+      set { this.SetValue(BusyProperty, value); }
+      }
 
     public TFSTaskPane()
       {
@@ -33,9 +42,23 @@ namespace TFSTasksInOutlook
 
       onConnectToTfs = Observable.FromEventPattern(ConnectToTFS, "Click").Select(_ => Unit.Default);
 
-      onProjectSelected = Observable.FromEventPattern<SelectionChangedEventArgs>(TFSProjects, "SelectionChanged")
-        .Throttle(TimeSpan.FromSeconds(1), Scheduler.CurrentThread)
-        .Select(e => e.EventArgs.AddedItems.Cast<string>().FirstOrDefault());
+      onProjectSelected = Observable.Merge(
+        Observable.FromEventPattern<SelectionChangedEventArgs>(TFSProjects, "SelectionChanged").Select(e => _GetCurrentFilter()),
+        Observable.FromEventPattern<RoutedEventArgs>(ShowTasks, "Checked").Select(e => _GetCurrentFilter()),
+        Observable.FromEventPattern<RoutedEventArgs>(ShowBugs, "Checked").Select(e => _GetCurrentFilter()),
+        Observable.FromEventPattern<RoutedEventArgs>(ShowProposed, "Checked").Select(e => _GetCurrentFilter()),
+        Observable.FromEventPattern<RoutedEventArgs>(ShowActive, "Checked").Select(e => _GetCurrentFilter()),
+        Observable.FromEventPattern<RoutedEventArgs>(ShowResolved, "Checked").Select(e => _GetCurrentFilter()),
+        Observable.FromEventPattern<RoutedEventArgs>(ShowClosed, "Checked").Select(e => _GetCurrentFilter()),
+        Observable.FromEventPattern<RoutedEventArgs>(ShowTasks, "Unchecked").Select(e => _GetCurrentFilter()),
+        Observable.FromEventPattern<RoutedEventArgs>(ShowBugs, "Unchecked").Select(e => _GetCurrentFilter()),
+        Observable.FromEventPattern<RoutedEventArgs>(ShowProposed, "Unchecked").Select(e => _GetCurrentFilter()),
+        Observable.FromEventPattern<RoutedEventArgs>(ShowActive, "Unchecked").Select(e => _GetCurrentFilter()),
+        Observable.FromEventPattern<RoutedEventArgs>(ShowResolved, "Unchecked").Select(e => _GetCurrentFilter()),
+        Observable.FromEventPattern<RoutedEventArgs>(ShowClosed, "Unchecked").Select(e => _GetCurrentFilter()))
+        .Where(f => f.Project != null)
+        .Do(e => SetBusy(true));
+        //.Throttle(TimeSpan.FromSeconds(1.0), Scheduler.Default);
 
       onTaskDoubleClicked = Observable.FromEventPattern<MouseButtonEventArgs>(TFSTasks, "MouseDoubleClick")
         .Select(e => ItemsControl.ContainerFromElement(e.Sender as ListBox, e.EventArgs.OriginalSource as DependencyObject) as ListBoxItem)
@@ -48,7 +71,7 @@ namespace TFSTasksInOutlook
       return onConnectToTfs;
       }
 
-    public IObservable<string> OnProjectSelected()
+    public IObservable<WorkItemFilter> OnProjectSelected()
       {
       return onProjectSelected;
       }
@@ -61,6 +84,25 @@ namespace TFSTasksInOutlook
     public void SetTasksList(IEnumerable<WorkItemInfo> tasks)
       {
       TFSTasks.ItemsSource = tasks;
+      }
+
+    public void SetBusy(bool busy)
+      {
+      Busy = busy;
+      }
+
+    private WorkItemFilter _GetCurrentFilter()
+      {
+      return new WorkItemFilter()
+      {
+        Project = TFSProjects.SelectedItem != null ? TFSProjects.SelectedItem.ToString() : null,
+        ShowTasks = ShowTasks.IsChecked.GetValueOrDefault(false),
+        ShowBugs = ShowBugs.IsChecked.GetValueOrDefault(false),
+        ShowProposed = ShowProposed.IsChecked.GetValueOrDefault(false),
+        ShowActive = ShowActive.IsChecked.GetValueOrDefault(false),
+        ShowResolved = ShowResolved.IsChecked.GetValueOrDefault(false),
+        ShowClosed = ShowClosed.IsChecked.GetValueOrDefault(false),
+      };
       }
     }
   }

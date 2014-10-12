@@ -4,9 +4,19 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:properties="clr-namespace:TFSTasksInOutlook.Properties"
+             xmlns:converters="clr-namespace:Converters"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
   <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    <converters:BooleanInverterConverter x:Key="BoolInv"/>
+    <converters:ValueConverterGroup x:Key="InvertAndVisibilitate">
+      <converters:BooleanInverterConverter/>
+      <BooleanToVisibilityConverter/>
+    </converters:ValueConverterGroup>
+
+
     <Style x:Key="TaskDataItem" TargetType="{x:Type Grid}">
       <Style.Triggers>
         <Trigger Property="IsMouseOver" Value="False">
@@ -47,6 +57,8 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="1*" />
     </Grid.RowDefinitions>
 
@@ -57,11 +69,46 @@
         <ColumnDefinition Width="1*" />
       </Grid.ColumnDefinitions>
       <TextBlock Text="Project filter: " Grid.Column="0" VerticalAlignment="Center" />
-      <ComboBox x:Name="TFSProjects" HorizontalAlignment="Stretch" Grid.Column="1" ItemsSource="{Binding Source={x:Static properties:Settings.Default}, Path=TfsProjects}">
+      <ComboBox x:Name="TFSProjects" HorizontalAlignment="Stretch" Grid.Column="1" ItemsSource="{Binding Source={x:Static properties:Settings.Default}, Path=TfsProjects}" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}">
       </ComboBox>
     </Grid>
-    <ListBox x:Name="TFSTasks" Grid.Row="2" HorizontalContentAlignment="Stretch" ItemsSource="{Binding}"
-             ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+
+    <Grid x:Name="WITypes" Grid.Row="2" HorizontalAlignment="Stretch" Margin="0,4" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="2*"/>
+        <ColumnDefinition Width="1*"/>
+        <ColumnDefinition Width="1*"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Text="Show only: " Grid.Column="0"/>
+      <CheckBox x:Name="ShowTasks" Content="Tasks" Grid.Column="1" IsChecked="True" />
+      <CheckBox x:Name="ShowBugs" Content="Bugs" Grid.Column="2" IsChecked="True" />
+    </Grid>
+
+    <Grid x:Name="WIstate" Grid.Row="3" HorizontalAlignment="Stretch" Margin="0,4" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+      <CheckBox x:Name="ShowProposed" Content="Proposed" Grid.Column="0" />
+      <CheckBox x:Name="ShowActive" Content="Active" Grid.Column="1" IsChecked="True" />
+      <CheckBox x:Name="ShowResolved" Content="Resolved" Grid.Column="2" IsChecked="True" />
+      <CheckBox x:Name="ShowClosed" Content="Closed" Grid.Column="3" />
+    </Grid>
+
+    <Grid Grid.Row="4" Visibility="{Binding Path=Busy, Converter={StaticResource BoolToVis}}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <ProgressBar x:Name="BusyBar" Grid.Row="1" Height="28" Margin="5" IsIndeterminate="True" />
+    </Grid>
+    
+    <ListBox x:Name="TFSTasks" Grid.Row="4" HorizontalContentAlignment="Stretch" ItemsSource="{Binding}"
+             ScrollViewer.HorizontalScrollBarVisibility="Hidden" Visibility="{Binding Path=Busy, Converter={StaticResource InvertAndVisibilitate}}">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <Grid HorizontalAlignment="Stretch" Margin="0,4,4,0"  Style="{StaticResource TaskDataItem}">
