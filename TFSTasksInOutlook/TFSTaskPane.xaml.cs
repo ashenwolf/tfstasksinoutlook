@@ -24,7 +24,8 @@ namespace TFSTasksInOutlook
   public partial class TFSTaskPane : UserControl, ITFSTaskPaneView
     {
     private IObservable<Unit> onConnectToTfs;
-    private IObservable<WorkItemFilter> onProjectSelected;
+    private IObservable<Unit> onGoToReportClicked;
+    private IObservable<WorkItemFilter> onTaskFilterChanged;
     private IObservable<WorkItemInfo> onTaskDoubleClicked;
 
     public static readonly DependencyProperty BusyProperty =
@@ -42,7 +43,7 @@ namespace TFSTasksInOutlook
 
       onConnectToTfs = Observable.FromEventPattern(ConnectToTFS, "Click").Select(_ => Unit.Default);
 
-      onProjectSelected = Observable.Merge(
+      onTaskFilterChanged = Observable.Merge(
           Observable.FromEventPattern<SelectionChangedEventArgs>(TFSProjects, "SelectionChanged").Select(e => _GetCurrentFilter()),
           Observable.FromEventPattern(RefreshButton, "Click").Select(e => _GetCurrentFilter()))
         .Where(f => f.Project != null)
@@ -52,6 +53,8 @@ namespace TFSTasksInOutlook
         .Select(e => ItemsControl.ContainerFromElement(e.Sender as ListBox, e.EventArgs.OriginalSource as DependencyObject) as ListBoxItem)
         .Where(item => item != null)
         .Select(item => (WorkItemInfo)TFSTasks.ItemContainerGenerator.ItemFromContainer(item));
+
+      onGoToReportClicked = Observable.FromEventPattern(GoToReportWebsite, "Click").Select(_ => Unit.Default);
       }
 
     public IObservable<Unit> OnConnectToTfs()
@@ -59,9 +62,14 @@ namespace TFSTasksInOutlook
       return onConnectToTfs;
       }
 
-    public IObservable<WorkItemFilter> OnProjectSelected()
+    public IObservable<Unit> OnGoToReport()
       {
-      return onProjectSelected;
+      return onGoToReportClicked;
+      }
+
+    public IObservable<WorkItemFilter> OnTaskFilterChanged()
+      {
+      return onTaskFilterChanged;
       }
 
     public IObservable<WorkItemInfo> OnTaskDoubleClicked()

@@ -61,6 +61,7 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="1*" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
     <Button Grid.Row="0" x:Name="ConnectToTFS" Content="Connecto to Team Foundation Server"  />
@@ -143,5 +144,7 @@
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
+
+    <Button Grid.Row="6" x:Name="GoToReportWebsite" Content="Go to report website" Margin="0,4,0,0"/>
   </Grid>
 </UserControl>

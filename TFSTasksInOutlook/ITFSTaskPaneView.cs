@@ -9,7 +9,8 @@ namespace TFSTasksInOutlook
   interface ITFSTaskPaneView
     {
     IObservable<Unit> OnConnectToTfs();
-    IObservable<WorkItemFilter> OnProjectSelected();
+    IObservable<Unit> OnGoToReport();
+    IObservable<WorkItemFilter> OnTaskFilterChanged();
     IObservable<WorkItemInfo> OnTaskDoubleClicked();
 
     void SetTasksList(IEnumerable<WorkItemInfo> tasks);

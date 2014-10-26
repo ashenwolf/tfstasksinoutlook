@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -30,12 +31,10 @@ namespace TFSTasksInOutlook
     {
     private TFSProxy tfsProxy = new TFSProxy();
     private ITFSTaskPaneView paneView;
-    private int backgroundOperations;
 
     public TFSTaskPaneController(ITFSTaskPaneView pane)
       {
       paneView = pane;
-      backgroundOperations = 0;
 
       _SubscribeObservables();
       }
@@ -44,7 +43,9 @@ namespace TFSTasksInOutlook
       {
       paneView.OnConnectToTfs().Subscribe(_ => SelectNewTfsServer());
 
-      paneView.OnProjectSelected()
+      paneView.OnGoToReport().Subscribe(_ => OpenReportsPageInBrowser());
+
+      paneView.OnTaskFilterChanged()
         .ObserveOn(Scheduler.Default)
         .Select(s => tfsProxy.GetTasks(s))
         .ObserveOn(DispatcherScheduler.Current)
@@ -55,6 +56,11 @@ namespace TFSTasksInOutlook
           });
 
       paneView.OnTaskDoubleClicked().Subscribe(t => _CreateItemInCalendar(t));
+      }
+
+    private void OpenReportsPageInBrowser()
+      {
+      Process.Start("http://w0141db05/Reports_INSTANCE_2/Pages/Report.aspx?ItemPath=%2fTfsReports%2fDefaultCollection%2fAdministrative+Tasks%2fTimeSheet+Report");
       }
 
     public void SelectNewTfsServer()
