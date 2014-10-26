@@ -41,9 +41,9 @@ namespace TFSTasksInOutlook
 
     private void _SubscribeObservables()
       {
-      paneView.OnConnectToTfs().Subscribe(_ => SelectNewTfsServer());
+      paneView.OnConnectToTfs().Subscribe(_ => _SelectNewTfsServer());
 
-      paneView.OnGoToReport().Subscribe(_ => OpenReportsPageInBrowser());
+      paneView.OnGoToReport().Subscribe(_ => _OpenReportsPageInBrowser());
 
       paneView.OnTaskFilterChanged()
         .ObserveOn(Scheduler.Default)
@@ -58,12 +58,12 @@ namespace TFSTasksInOutlook
       paneView.OnTaskDoubleClicked().Subscribe(t => _CreateItemInCalendar(t));
       }
 
-    private void OpenReportsPageInBrowser()
+    private void _OpenReportsPageInBrowser()
       {
       Process.Start("http://w0141db05/Reports_INSTANCE_2/Pages/Report.aspx?ItemPath=%2fTfsReports%2fDefaultCollection%2fAdministrative+Tasks%2fTimeSheet+Report");
       }
 
-    public void SelectNewTfsServer()
+    private void _SelectNewTfsServer()
       {
       var tfsServer = tfsProxy.GetNewTfsServer();
       if (tfsServer != null)
