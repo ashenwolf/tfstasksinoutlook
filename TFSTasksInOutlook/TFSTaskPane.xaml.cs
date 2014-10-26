@@ -43,22 +43,10 @@ namespace TFSTasksInOutlook
       onConnectToTfs = Observable.FromEventPattern(ConnectToTFS, "Click").Select(_ => Unit.Default);
 
       onProjectSelected = Observable.Merge(
-        Observable.FromEventPattern<SelectionChangedEventArgs>(TFSProjects, "SelectionChanged").Select(e => _GetCurrentFilter()),
-        Observable.FromEventPattern<RoutedEventArgs>(ShowTasks, "Checked").Select(e => _GetCurrentFilter()),
-        Observable.FromEventPattern<RoutedEventArgs>(ShowBugs, "Checked").Select(e => _GetCurrentFilter()),
-        Observable.FromEventPattern<RoutedEventArgs>(ShowProposed, "Checked").Select(e => _GetCurrentFilter()),
-        Observable.FromEventPattern<RoutedEventArgs>(ShowActive, "Checked").Select(e => _GetCurrentFilter()),
-        Observable.FromEventPattern<RoutedEventArgs>(ShowResolved, "Checked").Select(e => _GetCurrentFilter()),
-        Observable.FromEventPattern<RoutedEventArgs>(ShowClosed, "Checked").Select(e => _GetCurrentFilter()),
-        Observable.FromEventPattern<RoutedEventArgs>(ShowTasks, "Unchecked").Select(e => _GetCurrentFilter()),
-        Observable.FromEventPattern<RoutedEventArgs>(ShowBugs, "Unchecked").Select(e => _GetCurrentFilter()),
-        Observable.FromEventPattern<RoutedEventArgs>(ShowProposed, "Unchecked").Select(e => _GetCurrentFilter()),
-        Observable.FromEventPattern<RoutedEventArgs>(ShowActive, "Unchecked").Select(e => _GetCurrentFilter()),
-        Observable.FromEventPattern<RoutedEventArgs>(ShowResolved, "Unchecked").Select(e => _GetCurrentFilter()),
-        Observable.FromEventPattern<RoutedEventArgs>(ShowClosed, "Unchecked").Select(e => _GetCurrentFilter()))
+          Observable.FromEventPattern<SelectionChangedEventArgs>(TFSProjects, "SelectionChanged").Select(e => _GetCurrentFilter()),
+          Observable.FromEventPattern(RefreshButton, "Click").Select(e => _GetCurrentFilter()))
         .Where(f => f.Project != null)
         .Do(e => SetBusy(true));
-        //.Throttle(TimeSpan.FromSeconds(1.0), Scheduler.Default);
 
       onTaskDoubleClicked = Observable.FromEventPattern<MouseButtonEventArgs>(TFSTasks, "MouseDoubleClick")
         .Select(e => ItemsControl.ContainerFromElement(e.Sender as ListBox, e.EventArgs.OriginalSource as DependencyObject) as ListBoxItem)

@@ -59,10 +59,11 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="1*" />
     </Grid.RowDefinitions>
 
-    <Button Grid.Row="0" x:Name="ConnectToTFS" Content="Connecto To Team Foundation Server"  />
+    <Button Grid.Row="0" x:Name="ConnectToTFS" Content="Connecto to Team Foundation Server"  />
     <Grid Grid.Row="1" Margin="0, 10" HorizontalAlignment="Stretch">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
@@ -98,7 +99,9 @@
       <CheckBox x:Name="ShowClosed" Content="Closed" Grid.Column="3" />
     </Grid>
 
-    <Grid Grid.Row="4" Visibility="{Binding Path=Busy, Converter={StaticResource BoolToVis}}">
+    <Button Grid.Row="4" x:Name="RefreshButton" Content="Update tasks list" Margin="0,4" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}"/>
+
+    <Grid Grid.Row="5" Visibility="{Binding Path=Busy, Converter={StaticResource BoolToVis}}">
       <Grid.RowDefinitions>
         <RowDefinition Height="*" />
         <RowDefinition Height="Auto" />
@@ -107,7 +110,7 @@
       <ProgressBar x:Name="BusyBar" Grid.Row="1" Height="28" Margin="5" IsIndeterminate="True" />
     </Grid>
     
-    <ListBox x:Name="TFSTasks" Grid.Row="4" HorizontalContentAlignment="Stretch" ItemsSource="{Binding}"
+    <ListBox x:Name="TFSTasks" Grid.Row="5" HorizontalContentAlignment="Stretch" ItemsSource="{Binding}"
              ScrollViewer.HorizontalScrollBarVisibility="Hidden" Visibility="{Binding Path=Busy, Converter={StaticResource InvertAndVisibilitate}}">
       <ListBox.ItemTemplate>
         <DataTemplate>

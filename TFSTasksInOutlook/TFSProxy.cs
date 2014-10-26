@@ -43,28 +43,32 @@ namespace TFSTasksInOutlook
 
     public IEnumerable<WorkItemInfo> GetTasks(WorkItemFilter s)
       {
-      TfsTeamProjectCollection tpc = new TfsTeamProjectCollection(new Uri(Properties.Settings.Default.TfsUri));
-      WorkItemStore workItemStore = (WorkItemStore)tpc.GetService(typeof(WorkItemStore));
-      var q =
-        @"Select [Id], [Title], [Completed Work] From WorkItems " +
-        @"Where " +
-        @"[System.TeamProject] = '" + s.Project + "' And [System.AssignedTo] = @Me " +
-        GetItemTypeFilter(s) +
-        _GetStateFilter(s) +
-        @"Order By [Work Item Type] ";
-      WorkItemCollection queryResults = workItemStore.Query(q);
-
       var tasks = new List<WorkItemInfo>();
-      foreach (WorkItem wi in queryResults)
+      TfsTeamProjectCollection tpc = new TfsTeamProjectCollection(new Uri(Properties.Settings.Default.TfsUri));
+      try
         {
-        tasks.Add(new WorkItemInfo()
-        {
-          Id = wi.Id,
-          Title = wi.Title,
-          CompletedWork = wi.Fields["Completed Work"].Value != null ? Convert.ToDouble(wi.Fields["Completed Work"].Value) : 0.0,
-          ItemType = wi.Type.Name
-        });
+        WorkItemStore workItemStore = (WorkItemStore)tpc.GetService(typeof(WorkItemStore));
+        var q =
+          @"Select [Id], [Title], [Completed Work] From WorkItems " +
+          @"Where " +
+          @"[System.TeamProject] = '" + s.Project + "' And [System.AssignedTo] = @Me " +
+          GetItemTypeFilter(s) +
+          _GetStateFilter(s) +
+          @"Order By [Work Item Type] ";
+        WorkItemCollection queryResults = workItemStore.Query(q);
+
+        foreach (WorkItem wi in queryResults)
+          {
+          tasks.Add(new WorkItemInfo()
+          {
+            Id = wi.Id,
+            Title = wi.Title,
+            CompletedWork = wi.Fields["Completed Work"].Value != null ? Convert.ToDouble(wi.Fields["Completed Work"].Value) : 0.0,
+            ItemType = wi.Type.Name
+          });
+          }
         }
+      catch (Microsoft.TeamFoundation.TeamFoundationServiceUnavailableException) { }
       return tasks;
       }
 
