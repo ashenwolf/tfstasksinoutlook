@@ -109,7 +109,8 @@ namespace TFSTasksInOutlook
         WorkItemCollection queryResults = workItemStore.Query(wiql);
         foreach (WorkItem wi in queryResults)
           {
-          tasks.Add(_WorkItemToWorkItemInfo(wi));
+          if (wi.Type.Name.Equals("Bug", StringComparison.InvariantCultureIgnoreCase) || wi.Type.Name.Equals("Task", StringComparison.InvariantCultureIgnoreCase))
+            tasks.Add(_WorkItemToWorkItemInfo(wi));
           }
         }
       catch (Microsoft.TeamFoundation.TeamFoundationServiceUnavailableException) { }
