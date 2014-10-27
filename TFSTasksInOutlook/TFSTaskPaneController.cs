@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reactive;
@@ -14,6 +15,7 @@ namespace TFSTasksInOutlook
     public string Title { get; set; }
     public double CompletedWork { get; set; }
     public string ItemType { get; set; }
+    public string Project { get; set; }
     }
 
   public class WorkItemFilter
@@ -31,12 +33,35 @@ namespace TFSTasksInOutlook
     {
     private TFSProxy tfsProxy = new TFSProxy();
     private ITFSTaskPaneView paneView;
+    private List<WorkItemInfo> favouriteWorkItems;
 
     public TFSTaskPaneController(ITFSTaskPaneView pane)
       {
       paneView = pane;
+      favouriteWorkItems = new List<WorkItemInfo>();
+      paneView.SetFavTaskList(favouriteWorkItems);
 
       _SubscribeObservables();
+      _LoadFavourites();
+      }
+
+    private void _LoadFavourites()
+      {
+      var ids = new List<string>[] { new List<string>() };
+      if (Properties.Settings.Default.FavouriteWorkItems != null)
+        foreach (var id in Properties.Settings.Default.FavouriteWorkItems)
+          ids[0].Add(id);
+
+      ids.ToObservable()
+        .Do(_ => paneView.SetBusyAddFav(true))
+        .ObserveOn(Scheduler.Default)
+        .Select(x => tfsProxy.GetTasksByIds(x))
+        .ObserveOn(DispatcherScheduler.Current)
+        .Subscribe(wi =>
+          {
+            favouriteWorkItems.AddRange(wi);
+            paneView.SetBusyAddFav(false);
+          });
       }
 
     private void _SubscribeObservables()
@@ -51,16 +76,38 @@ namespace TFSTasksInOutlook
         .ObserveOn(DispatcherScheduler.Current)
         .Subscribe(r =>
           {
-            paneView.SetTasksList(r);
-            paneView.SetBusy(false);
+          paneView.SetTasksList(r);
+          paneView.SetBusyGetTasks(false);
           });
 
       paneView.OnTaskDoubleClicked().Subscribe(t => _CreateItemInCalendar(t));
+
+      paneView.OnAddFavTask()
+        .Where(id => !favouriteWorkItems.Any(wi => wi.Id == Convert.ToInt64(id)))
+        .Do(_ => paneView.SetBusyAddFav(true))
+        .ObserveOn(Scheduler.Default)
+        .Select(id => _GetTaskInfo(id))
+        .ObserveOn(DispatcherScheduler.Current)
+        .Do(_ => paneView.SetBusyAddFav(false))
+        .Where(r => r != null)
+        .Subscribe(r =>
+          {
+          favouriteWorkItems.Add(r);
+          var coll = new System.Collections.Specialized.StringCollection();
+          coll.AddRange(favouriteWorkItems.Select(wi => wi.Id.ToString()).ToArray());
+          Properties.Settings.Default.FavouriteWorkItems = coll;
+          Properties.Settings.Default.Save();
+          });
+      }
+
+    private WorkItemInfo _GetTaskInfo(long id)
+      {
+      return tfsProxy.GetTaskInfo(id);
       }
 
     private void _OpenReportsPageInBrowser()
       {
-      Process.Start("http://w0141db05/Reports_INSTANCE_2/Pages/Report.aspx?ItemPath=%2fTfsReports%2fDefaultCollection%2fAdministrative+Tasks%2fTimeSheet+Report");
+      Process.Start(Properties.Settings.Default.TimesheetReportUrl);
       }
 
     private void _SelectNewTfsServer()

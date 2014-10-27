@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:properties="clr-namespace:TFSTasksInOutlook.Properties"
              xmlns:converters="clr-namespace:Converters"
+             xmlns:ex="clr-namespace:Extensions"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
@@ -15,7 +16,6 @@
       <converters:BooleanInverterConverter/>
       <BooleanToVisibilityConverter/>
     </converters:ValueConverterGroup>
-
 
     <Style x:Key="TaskDataItem" TargetType="{x:Type Grid}">
       <Style.Triggers>
@@ -56,94 +56,174 @@
   <Grid Margin="5">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="1*" />
+      <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
     <Button Grid.Row="0" x:Name="ConnectToTFS" Content="Connecto to Team Foundation Server"  />
-    <Grid Grid.Row="1" Margin="0, 10" HorizontalAlignment="Stretch">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="1*" />
-      </Grid.ColumnDefinitions>
-      <TextBlock Text="Project filter: " Grid.Column="0" VerticalAlignment="Center" />
-      <ComboBox x:Name="TFSProjects" HorizontalAlignment="Stretch" Grid.Column="1" ItemsSource="{Binding Source={x:Static properties:Settings.Default}, Path=TfsProjects}" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}">
-      </ComboBox>
-    </Grid>
 
-    <Grid x:Name="WITypes" Grid.Row="2" HorizontalAlignment="Stretch" Margin="0,4" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="2*"/>
-        <ColumnDefinition Width="1*"/>
-        <ColumnDefinition Width="1*"/>
-      </Grid.ColumnDefinitions>
-      <TextBlock Text="Show only: " Grid.Column="0"/>
-      <CheckBox x:Name="ShowTasks" Content="Tasks" Grid.Column="1" IsChecked="True" />
-      <CheckBox x:Name="ShowBugs" Content="Bugs" Grid.Column="2" IsChecked="True" />
-    </Grid>
+    <TabControl Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,4,0,0" VerticalAlignment="Stretch">
+      <TabItem Header="Favourite items">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
 
-    <Grid x:Name="WIstate" Grid.Row="3" HorizontalAlignment="Stretch" Margin="0,4" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="*"/>
-      </Grid.ColumnDefinitions>
+          <ListBox x:Name="FavouriteTasks" Grid.Row="0" HorizontalContentAlignment="Stretch" ItemsSource="{Binding}"
+             ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <Grid HorizontalAlignment="Stretch" Margin="0,4,4,0"  Style="{StaticResource TaskDataItem}">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition />
+                  </Grid.ColumnDefinitions>
 
-      <CheckBox x:Name="ShowProposed" Content="Proposed" Grid.Column="0" />
-      <CheckBox x:Name="ShowActive" Content="Active" Grid.Column="1" IsChecked="True" />
-      <CheckBox x:Name="ShowResolved" Content="Resolved" Grid.Column="2" IsChecked="True" />
-      <CheckBox x:Name="ShowClosed" Content="Closed" Grid.Column="3" />
-    </Grid>
+                  <Grid.Width>
+                    <Binding Path="ActualWidth" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type ScrollContentPresenter}}" />
+                  </Grid.Width>
 
-    <Button Grid.Row="4" x:Name="RefreshButton" Content="Update tasks list" Margin="0,4" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}"/>
+                  <Rectangle Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{StaticResource TaskDataItemTypeRect}" />
+                  <Grid Grid.Column="1" Margin="4" Background="{x:Null}">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-    <Grid Grid.Row="5" Visibility="{Binding Path=Busy, Converter={StaticResource BoolToVis}}">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="*" />
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="*" />
-      </Grid.RowDefinitions>
-      <ProgressBar x:Name="BusyBar" Grid.Row="1" Height="28" Margin="5" IsIndeterminate="True" />
-    </Grid>
-    
-    <ListBox x:Name="TFSTasks" Grid.Row="5" HorizontalContentAlignment="Stretch" ItemsSource="{Binding}"
-             ScrollViewer.HorizontalScrollBarVisibility="Hidden" Visibility="{Binding Path=Busy, Converter={StaticResource InvertAndVisibilitate}}">
-      <ListBox.ItemTemplate>
-        <DataTemplate>
-          <Grid HorizontalAlignment="Stretch" Margin="0,4,4,0"  Style="{StaticResource TaskDataItem}">
+                    <Grid Grid.Row="0">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Text="{Binding Id}" Grid.Column="0" TextBlock.FontWeight="Bold" />
+                      <TextBlock Text="{Binding Project}" Grid.Column="1" TextWrapping="Wrap" TextBlock.FontSize="11" HorizontalAlignment="Right" Foreground="Gray" />
+                    </Grid>
+
+                    <Grid Grid.Row="1" Margin="0,2,0,0">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Text="{Binding Title}" Grid.Column="0" TextWrapping="Wrap" TextBlock.FontSize="11" Grid.Row="1" HorizontalAlignment="Stretch" />
+                      <StackPanel Orientation="Horizontal" Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="4,0,0,0">
+                        <TextBlock Text="{Binding CompletedWork}" TextBlock.FontSize="11" HorizontalAlignment="Right" />
+                        <TextBlock Text="h" TextBlock.FontSize="11" />
+                      </StackPanel>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <ProgressBar x:Name="BusyBarFav" Grid.Row="1" Height="24" Margin="0, 4, 0, 0" IsIndeterminate="True"
+               Visibility="{Binding Path=BusyAddFav, Converter={StaticResource BoolToVis}}" />
+
+          <Grid Grid.Row="1" Margin="0,4,0,0" HorizontalAlignment="Stretch" Visibility="{Binding Path=BusyAddFav, Converter={StaticResource InvertAndVisibilitate}}">
             <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
               <ColumnDefinition Width="4" />
-              <ColumnDefinition />
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Grid.Width>
-              <Binding Path="ActualWidth" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type ScrollContentPresenter}}" />
-            </Grid.Width>
-
-            <Rectangle Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{StaticResource TaskDataItemTypeRect}" />
-            <Grid Grid.Column="1" Margin="4" Background="{x:Null}">
-              <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-              </Grid.RowDefinitions>
-
-              <TextBlock Text="{Binding Id}" TextBlock.FontWeight="Bold" Grid.Row="0" />
-              <TextBlock Text="{Binding Title}" TextWrapping="Wrap" TextBlock.FontSize="11" Grid.Row="1" HorizontalAlignment="Stretch" />
-            </Grid>
-            <StackPanel Orientation="Horizontal" Grid.Column="2" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,4,4">
-              <TextBlock Text="{Binding CompletedWork}" TextBlock.FontSize="11" HorizontalAlignment="Right" />
-              <TextBlock Text="h" TextBlock.FontSize="11" />
-            </StackPanel>
+            <TextBox x:Name="NewTaskID" Grid.Column="0" HorizontalAlignment="Stretch" ex:Masking.Mask="^\d*$" />
+            <Button x:Name="AddFavTask" Grid.Column="2" Content="Add task" />
           </Grid>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
+        </Grid>
+      </TabItem>
+      <TabItem Header="Project items">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+
+          <Grid Grid.Row="0" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Project filter: " Grid.Column="0" VerticalAlignment="Center" />
+            <ComboBox x:Name="TFSProjects" HorizontalAlignment="Stretch" Grid.Column="1" ItemsSource="{Binding Source={x:Static properties:Settings.Default}, Path=TfsProjects}" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}"></ComboBox>
+          </Grid>
+
+          <Grid x:Name="WITypes" Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,4" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="2*"/>
+              <ColumnDefinition Width="1*"/>
+              <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Show only: " Grid.Column="0"/>
+            <CheckBox x:Name="ShowTasks" Content="Tasks" Grid.Column="1" IsChecked="True" />
+            <CheckBox x:Name="ShowBugs" Content="Bugs" Grid.Column="2" IsChecked="True" />
+          </Grid>
+
+          <Grid x:Name="WIstate" Grid.Row="2" HorizontalAlignment="Stretch" Margin="0,4" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <CheckBox x:Name="ShowProposed" Content="Proposed" Grid.Column="0" />
+            <CheckBox x:Name="ShowActive" Content="Active" Grid.Column="1" IsChecked="True" />
+            <CheckBox x:Name="ShowResolved" Content="Resolved" Grid.Column="2" IsChecked="True" />
+            <CheckBox x:Name="ShowClosed" Content="Closed" Grid.Column="3" />
+          </Grid>
+
+          <Button Grid.Row="3" x:Name="RefreshButton" Content="Update tasks list" Margin="0,4" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}"/>
+
+
+          <Grid Grid.Row="4" Visibility="{Binding Path=Busy, Converter={StaticResource BoolToVis}}">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <ProgressBar x:Name="BusyBar" Grid.Row="1" Height="28" IsIndeterminate="True" />
+          </Grid>
+
+          <ListBox x:Name="TFSTasks" Grid.Row="4" HorizontalContentAlignment="Stretch" ItemsSource="{Binding}"
+             ScrollViewer.HorizontalScrollBarVisibility="Hidden" Visibility="{Binding Path=Busy, Converter={StaticResource InvertAndVisibilitate}}">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <Grid HorizontalAlignment="Stretch" Margin="0,4,4,0"  Style="{StaticResource TaskDataItem}">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+
+                  <Grid.Width>
+                    <Binding Path="ActualWidth" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type ScrollContentPresenter}}" />
+                  </Grid.Width>
+
+                  <Rectangle Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{StaticResource TaskDataItemTypeRect}" />
+                  <Grid Grid.Column="1" Margin="4" Background="{x:Null}">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="{Binding Id}" TextBlock.FontWeight="Bold" Grid.Row="0" />
+                    <TextBlock Text="{Binding Title}" TextWrapping="Wrap" TextBlock.FontSize="11" Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,2,0,0" />
+                  </Grid>
+                  <StackPanel Orientation="Horizontal" Grid.Column="2" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,4,4">
+                    <TextBlock Text="{Binding CompletedWork}" TextBlock.FontSize="11" HorizontalAlignment="Right" />
+                    <TextBlock Text="h" TextBlock.FontSize="11" />
+                  </StackPanel>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </TabItem>
+    </TabControl>
 
     <Button Grid.Row="6" x:Name="GoToReportWebsite" Content="Go to report website" Margin="0,4,0,0"/>
   </Grid>

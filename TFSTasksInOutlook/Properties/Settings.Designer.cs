@@ -45,5 +45,26 @@ namespace TFSTasksInOutlook.Properties {
                 this["TfsProjects"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection FavouriteWorkItems {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["FavouriteWorkItems"]));
+            }
+            set {
+                this["FavouriteWorkItems"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://w0141db05/Reports_INSTANCE_2/Pages/Report.aspx?ItemPath=%2fTfsReports%2fDe" +
+            "faultCollection%2fAdministrative+Tasks%2fTimeSheet+Report")]
+        public string TimesheetReportUrl {
+            get {
+                return ((string)(this["TimesheetReportUrl"]));
+            }
+        }
     }
 }

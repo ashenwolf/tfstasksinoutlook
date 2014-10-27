@@ -8,5 +8,11 @@
     <Setting Name="TfsProjects" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="FavouriteWorkItems" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TimesheetReportUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">http://w0141db05/Reports_INSTANCE_2/Pages/Report.aspx?ItemPath=%2fTfsReports%2fDefaultCollection%2fAdministrative+Tasks%2fTimeSheet+Report</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

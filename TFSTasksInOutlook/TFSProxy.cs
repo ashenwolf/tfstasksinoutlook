@@ -7,8 +7,6 @@ using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.Server;
 using Microsoft.TeamFoundation.WorkItemTracking.Client;
 
-
-
 namespace TFSTasksInOutlook
   {
   class TFSProxy
@@ -43,36 +41,29 @@ namespace TFSTasksInOutlook
 
     public IEnumerable<WorkItemInfo> GetTasks(WorkItemFilter s)
       {
-      var tasks = new List<WorkItemInfo>();
-      TfsTeamProjectCollection tpc = new TfsTeamProjectCollection(new Uri(Properties.Settings.Default.TfsUri));
-      try
-        {
-        WorkItemStore workItemStore = (WorkItemStore)tpc.GetService(typeof(WorkItemStore));
-        var q =
-          @"Select [Id], [Title], [Completed Work] From WorkItems " +
-          @"Where " +
-          @"[System.TeamProject] = '" + s.Project + "' And [System.AssignedTo] = @Me " +
-          GetItemTypeFilter(s) +
-          _GetStateFilter(s) +
-          @"Order By [Work Item Type] ";
-        WorkItemCollection queryResults = workItemStore.Query(q);
-
-        foreach (WorkItem wi in queryResults)
-          {
-          tasks.Add(new WorkItemInfo()
-          {
-            Id = wi.Id,
-            Title = wi.Title,
-            CompletedWork = wi.Fields["Completed Work"].Value != null ? Convert.ToDouble(wi.Fields["Completed Work"].Value) : 0.0,
-            ItemType = wi.Type.Name
-          });
-          }
-        }
-      catch (Microsoft.TeamFoundation.TeamFoundationServiceUnavailableException) { }
-      return tasks;
+      var q =
+        @"Select [Id], [Title], [Completed Work], [System.TeamProject] From WorkItems " +
+        @"Where " +
+        @"[System.TeamProject] = '" + s.Project + "' And [System.AssignedTo] = @Me " +
+        _GetItemTypeFilter(s) +
+        _GetStateFilter(s) +
+        @"Order By [Work Item Type] ";
+      return _QueryAll(q);
       }
 
-    private string GetItemTypeFilter(WorkItemFilter s)
+    public WorkItemInfo GetTaskInfo(long id)
+      {
+      var q = @"Select [Id], [Title], [Completed Work], [System.TeamProject] From WorkItems Where [Id] = " + id.ToString();
+      return _QueryOne(q);
+      }
+
+    public IEnumerable<WorkItemInfo> GetTasksByIds(IEnumerable<string> ids)
+      {
+      var q = @"Select [Id], [Title], [Completed Work], [System.TeamProject] From WorkItems Where [Id] IN (" + String.Join(", ", ids) +") ";
+      return _QueryAll(q);
+      }
+
+    private string _GetItemTypeFilter(WorkItemFilter s)
       {
       var filters = new List<string>();
       if (s.ShowTasks) filters.Add("[Work Item Type] = 'Task'");
@@ -94,6 +85,41 @@ namespace TFSTasksInOutlook
       return  filters.Count > 0
         ? @"And (" + String.Join(" Or ", filters) + ") "
         : "And [State] = 'Active' ";
+      }
+
+    private WorkItemInfo _WorkItemToWorkItemInfo(WorkItem wi)
+      {
+      return new WorkItemInfo()
+            {
+              Id = wi.Id,
+              Title = wi.Title,
+              CompletedWork = wi.Fields["Completed Work"].Value != null ? Convert.ToDouble(wi.Fields["Completed Work"].Value) : 0.0,
+              ItemType = wi.Type.Name,
+              Project = wi.Project.Name
+            };
+      }
+
+    private IEnumerable<WorkItemInfo> _QueryAll(string wiql)
+      {
+      var tasks = new List<WorkItemInfo>();
+      try
+        {
+        TfsTeamProjectCollection tpc = new TfsTeamProjectCollection(new Uri(Properties.Settings.Default.TfsUri));
+        WorkItemStore workItemStore = (WorkItemStore)tpc.GetService(typeof(WorkItemStore));
+        WorkItemCollection queryResults = workItemStore.Query(wiql);
+        foreach (WorkItem wi in queryResults)
+          {
+          tasks.Add(_WorkItemToWorkItemInfo(wi));
+          }
+        }
+      catch (Microsoft.TeamFoundation.TeamFoundationServiceUnavailableException) { }
+      catch (Microsoft.TeamFoundation.WorkItemTracking.Client.UnexpectedErrorException) { }
+      return tasks;
+      }
+
+    private WorkItemInfo _QueryOne(string wiql)
+      {
+      return _QueryAll(wiql).FirstOrDefault();
       }
     }
   }

@@ -12,8 +12,12 @@ namespace TFSTasksInOutlook
     IObservable<Unit> OnGoToReport();
     IObservable<WorkItemFilter> OnTaskFilterChanged();
     IObservable<WorkItemInfo> OnTaskDoubleClicked();
+    IObservable<long> OnAddFavTask();
 
     void SetTasksList(IEnumerable<WorkItemInfo> tasks);
-    void SetBusy(bool busy);
+    void SetFavTaskList(IEnumerable<WorkItemInfo> tasks);
+    void SetBusyGetTasks(bool busy);
+    void SetBusyAddFav(bool busy);
+
     }
   }

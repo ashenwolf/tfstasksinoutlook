@@ -181,6 +181,7 @@
   -->
   <ItemGroup>
     <Compile Include="ITFSTaskPaneView.cs" />
+    <Compile Include="TextBoxMask.cs" />
     <Compile Include="TFSProxy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
