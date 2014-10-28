@@ -86,10 +86,10 @@ namespace TFSTasksInOutlook
             .Select(e => ItemsControl.ContainerFromElement(e.Sender as ListBox, e.EventArgs.OriginalSource as DependencyObject) as ListBoxItem)
             .Where(item => item != null)
             .Select(item => (WorkItemInfo)TFSTasks.ItemContainerGenerator.ItemFromContainer(item)),
-          Observable.FromEventPattern<MouseButtonEventArgs>(FavouriteTasks, "MouseDoubleClick")
+          Observable.FromEventPattern<MouseButtonEventArgs>(FavoriteTasks, "MouseDoubleClick")
             .Select(e => ItemsControl.ContainerFromElement(e.Sender as ListBox, e.EventArgs.OriginalSource as DependencyObject) as ListBoxItem)
             .Where(item => item != null)
-            .Select(item => (WorkItemInfo)FavouriteTasks.ItemContainerGenerator.ItemFromContainer(item))
+            .Select(item => (WorkItemInfo)FavoriteTasks.ItemContainerGenerator.ItemFromContainer(item))
         );
 
       onAddFavTask = Observable.Merge(
@@ -143,7 +143,7 @@ namespace TFSTasksInOutlook
 
     public void SetFavTaskList(IEnumerable<WorkItemInfo> tasks)
       {
-      FavouriteTasks.ItemsSource = tasks;
+      FavoriteTasks.ItemsSource = tasks;
       }
     
     public void SetBusyGetTasks(bool busy)
@@ -154,6 +154,7 @@ namespace TFSTasksInOutlook
     public void SetBusyAddFav(bool busy)
       {
       BusyAddFav = busy;
+      if (!busy) NewTaskID.Focus();
       }
 
     private WorkItemFilter _GetCurrentFilter()

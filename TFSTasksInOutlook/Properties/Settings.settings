@@ -8,7 +8,7 @@
     <Setting Name="TfsProjects" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="FavouriteWorkItems" Type="System.Collections.Specialized.StringCollection" Scope="User">
+    <Setting Name="FavoriteWorkItems" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="TimesheetReportUrl" Type="System.String" Scope="Application">

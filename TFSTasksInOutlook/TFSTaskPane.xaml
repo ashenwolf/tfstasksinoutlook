@@ -67,14 +67,14 @@
     <Button Grid.Row="0" x:Name="ConnectToTFS" Content="Connecto to Team Foundation Server"  />
 
     <TabControl Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,4,0,0" VerticalAlignment="Stretch">
-      <TabItem Header="Favourite items">
+      <TabItem Header="Favorite items">
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
 
-          <ListBox x:Name="FavouriteTasks" Grid.Row="0" HorizontalContentAlignment="Stretch" ItemsSource="{Binding}"
+          <ListBox x:Name="FavoriteTasks" Grid.Row="0" HorizontalContentAlignment="Stretch" ItemsSource="{Binding}"
              ScrollViewer.HorizontalScrollBarVisibility="Hidden"
              ItemContainerStyle="{StaticResource FavListBoxItem}">
             <ListBox.ItemTemplate>

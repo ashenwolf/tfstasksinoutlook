@@ -7,6 +7,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text;
 using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace TFSTasksInOutlook
   {
@@ -43,26 +44,29 @@ namespace TFSTasksInOutlook
       paneView.SetFavTaskList(favoriteWorkItems);
 
       _SubscribeObservables();
-      _LoadFavourites();
+      _LoadFavorites();
       }
 
-    private void _LoadFavourites()
+    private void _LoadFavorites()
       {
       var ids = new List<string>[] { new List<string>() };
-      if (Properties.Settings.Default.FavouriteWorkItems != null)
-        foreach (var id in Properties.Settings.Default.FavouriteWorkItems)
+      if (Properties.Settings.Default.FavoriteWorkItems != null && Properties.Settings.Default.FavoriteWorkItems.Count > 0)
+        {
+        foreach (var id in Properties.Settings.Default.FavoriteWorkItems)
           ids[0].Add(id);
 
-      ids.ToObservable()
-        .Do(_ => paneView.SetBusyAddFav(true))
-        .ObserveOn(Scheduler.Default)
-        .Select(x => tfsProxy.GetTasksByIds(x))
-        .ObserveOn(DispatcherScheduler.Current)
-        .Subscribe(wi =>
-          {
-          wi.ToList().ForEach(item => favoriteWorkItems.Add(item));
-          paneView.SetBusyAddFav(false);
-          });
+        favoriteWorkItems.Clear();
+        ids.ToObservable()
+          .Do(_ => paneView.SetBusyAddFav(true))
+          .ObserveOn(Scheduler.Default)
+          .Select(x => tfsProxy.GetTasksByIds(x))
+          .ObserveOn(DispatcherScheduler.Current)
+          .Subscribe(wi =>
+            {
+            wi.ToList().ForEach(item => favoriteWorkItems.Add(item));
+            paneView.SetBusyAddFav(false);
+            });
+        }
       }
 
     private void _SubscribeObservables()
@@ -121,10 +125,8 @@ namespace TFSTasksInOutlook
       if (tfsServer != null)
         {
         Properties.Settings.Default.TfsUri = tfsServer.TfsUri;
-        var coll = new System.Collections.Specialized.StringCollection();
-        coll.AddRange(tfsServer.TfsProjects);
-        Properties.Settings.Default.TfsProjects = coll;
-        Properties.Settings.Default.Save();
+        _SaveProjectsList(tfsServer.TfsProjects);
+        _LoadFavorites();
         }
       }
 
@@ -157,7 +159,15 @@ namespace TFSTasksInOutlook
       {
       var coll = new System.Collections.Specialized.StringCollection();
       coll.AddRange(favoriteWorkItems.Select(wi => wi.Id.ToString()).ToArray());
-      Properties.Settings.Default.FavouriteWorkItems = coll;
+      Properties.Settings.Default.FavoriteWorkItems = coll;
+      Properties.Settings.Default.Save();
+      }
+
+    private void _SaveProjectsList(string[] projects)
+      {
+      var coll = new System.Collections.Specialized.StringCollection();
+      coll.AddRange(projects.OrderBy(s => s).ToArray());
+      Properties.Settings.Default.TfsProjects = coll;
       Properties.Settings.Default.Save();
       }
     }

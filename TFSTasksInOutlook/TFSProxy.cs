@@ -115,6 +115,7 @@ namespace TFSTasksInOutlook
         }
       catch (Microsoft.TeamFoundation.TeamFoundationServiceUnavailableException) { }
       catch (Microsoft.TeamFoundation.WorkItemTracking.Client.UnexpectedErrorException) { }
+      catch (System.UriFormatException) { }
       return tasks;
       }
 

@@ -48,12 +48,12 @@ namespace TFSTasksInOutlook.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection FavouriteWorkItems {
+        public global::System.Collections.Specialized.StringCollection FavoriteWorkItems {
             get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["FavouriteWorkItems"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["FavoriteWorkItems"]));
             }
             set {
-                this["FavouriteWorkItems"] = value;
+                this["FavoriteWorkItems"] = value;
             }
         }
         
