@@ -17,6 +17,17 @@
       <BooleanToVisibilityConverter/>
     </converters:ValueConverterGroup>
    
+    <Style x:Key="TaskDataItemTypeRect" TargetType="{x:Type Rectangle}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding ItemType}" Value="Bug">
+          <Setter Property="Fill" Value="Red" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding ItemType}" Value="Task">
+          <Setter Property="Fill" Value="Green" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+
     <Style x:Key="ListBoxItemBase" TargetType="{x:Type ListBoxItem}">
       <Style.Triggers>
         <Trigger Property="IsSelected" Value="True">
@@ -33,17 +44,6 @@
         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="LightBlue" />
       </Style.Resources>
     </Style>
-    
-    <Style x:Key="TaskDataItemTypeRect" TargetType="{x:Type Rectangle}">
-      <Style.Triggers>
-        <DataTrigger Binding="{Binding ItemType}" Value="Bug">
-          <Setter Property="Fill" Value="Red" />
-        </DataTrigger>
-        <DataTrigger Binding="{Binding ItemType}" Value="Task">
-          <Setter Property="Fill" Value="Green" />
-        </DataTrigger>
-      </Style.Triggers>
-    </Style>
 
     <ContextMenu x:Key="FavContextMenu">
       <MenuItem Header="Remove from favorites" x:Name="FavRemove"
@@ -54,6 +54,10 @@
     <Style x:Key="FavListBoxItem" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource ListBoxItemBase}">
       <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
       <Setter Property="ContextMenu" Value="{StaticResource FavContextMenu}" />
+    </Style>
+
+    <Style x:Key="TasksListBoxItem" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource ListBoxItemBase}">
+      <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
     </Style>
   </UserControl.Resources>
   
@@ -194,7 +198,8 @@
           </Grid>
 
           <ListBox x:Name="TFSTasks" Grid.Row="4" HorizontalContentAlignment="Stretch" ItemsSource="{Binding}"
-             ScrollViewer.HorizontalScrollBarVisibility="Hidden" Visibility="{Binding Path=Busy, Converter={StaticResource InvertAndVisibilitate}}">
+             ScrollViewer.HorizontalScrollBarVisibility="Hidden" Visibility="{Binding Path=Busy, Converter={StaticResource InvertAndVisibilitate}}"
+             ItemContainerStyle="{StaticResource TasksListBoxItem}">
             <ListBox.ItemTemplate>
               <DataTemplate>
                 <Grid HorizontalAlignment="Stretch" Margin="0,2,2,2">
