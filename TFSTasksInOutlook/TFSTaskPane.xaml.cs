@@ -28,6 +28,15 @@ namespace TFSTasksInOutlook
     private IObservable<WorkItemFilter> onTaskFilterChanged;
     private IObservable<WorkItemInfo> onTaskDoubleClicked;
     private IObservable<long> onAddFavTask;
+    private IObservable<WorkItemInfo> onRemoveFavorite;
+
+    private ICommand removeFavorite;
+
+    public class RemoveFavoriteEventArgs: EventArgs {
+      public RemoveFavoriteEventArgs(WorkItemInfo item) { Item = item; }
+      public WorkItemInfo Item { get; private set; }
+      }
+    public event EventHandler<RemoveFavoriteEventArgs> OnRemoveFavoriteEvent;
 
     public static readonly DependencyProperty BusyProperty =
       DependencyProperty.Register("Busy", typeof(bool), typeof(TFSTaskPane));
@@ -45,6 +54,17 @@ namespace TFSTasksInOutlook
       {
       get { return (bool)this.GetValue(BusyAddFavProperty); }
       set { this.SetValue(BusyAddFavProperty, value); }
+      }
+
+    public ICommand RemoveFavorite
+      {
+      get
+        {
+        return removeFavorite ?? (removeFavorite = new DelegateCommand(null, p =>
+          {
+            OnRemoveFavoriteEvent(this, new RemoveFavoriteEventArgs(p as WorkItemInfo));
+          }));
+        }
       }
 
     public TFSTaskPane()
@@ -80,6 +100,10 @@ namespace TFSTasksInOutlook
         .Do(_ => NewTaskID.Text = "");
 
       onGoToReportClicked = Observable.FromEventPattern(GoToReportWebsite, "Click").Select(_ => Unit.Default);
+
+      onRemoveFavorite = Observable.FromEventPattern<RemoveFavoriteEventArgs>(this, "OnRemoveFavoriteEvent")
+        .Where(e => e.EventArgs.Item != null)
+        .Select(e => e.EventArgs.Item);
       }
 
     public IObservable<Unit> OnConnectToTfs()
@@ -105,6 +129,11 @@ namespace TFSTasksInOutlook
     public IObservable<long> OnAddFavTask()
       {
       return onAddFavTask;
+      }
+
+    public IObservable<WorkItemInfo> OnRemoveFavorite()
+      {
+      return onRemoveFavorite;
       }
 
     public void SetTasksList(IEnumerable<WorkItemInfo> tasks)

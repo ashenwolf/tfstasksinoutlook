@@ -6,6 +6,7 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text;
+using System.Collections.ObjectModel;
 
 namespace TFSTasksInOutlook
   {
@@ -33,13 +34,13 @@ namespace TFSTasksInOutlook
     {
     private TFSProxy tfsProxy = new TFSProxy();
     private ITFSTaskPaneView paneView;
-    private List<WorkItemInfo> favouriteWorkItems;
+    private ObservableCollection<WorkItemInfo> favoriteWorkItems;
 
     public TFSTaskPaneController(ITFSTaskPaneView pane)
       {
       paneView = pane;
-      favouriteWorkItems = new List<WorkItemInfo>();
-      paneView.SetFavTaskList(favouriteWorkItems);
+      favoriteWorkItems = new ObservableCollection<WorkItemInfo>();
+      paneView.SetFavTaskList(favoriteWorkItems);
 
       _SubscribeObservables();
       _LoadFavourites();
@@ -59,8 +60,8 @@ namespace TFSTasksInOutlook
         .ObserveOn(DispatcherScheduler.Current)
         .Subscribe(wi =>
           {
-            favouriteWorkItems.AddRange(wi);
-            paneView.SetBusyAddFav(false);
+          wi.ToList().ForEach(item => favoriteWorkItems.Add(item));
+          paneView.SetBusyAddFav(false);
           });
       }
 
@@ -83,7 +84,7 @@ namespace TFSTasksInOutlook
       paneView.OnTaskDoubleClicked().Subscribe(t => _CreateItemInCalendar(t));
 
       paneView.OnAddFavTask()
-        .Where(id => !favouriteWorkItems.Any(wi => wi.Id == Convert.ToInt64(id)))
+        .Where(id => !favoriteWorkItems.Any(wi => wi.Id == Convert.ToInt64(id)))
         .Do(_ => paneView.SetBusyAddFav(true))
         .ObserveOn(Scheduler.Default)
         .Select(id => _GetTaskInfo(id))
@@ -92,11 +93,15 @@ namespace TFSTasksInOutlook
         .Where(r => r != null)
         .Subscribe(r =>
           {
-          favouriteWorkItems.Add(r);
-          var coll = new System.Collections.Specialized.StringCollection();
-          coll.AddRange(favouriteWorkItems.Select(wi => wi.Id.ToString()).ToArray());
-          Properties.Settings.Default.FavouriteWorkItems = coll;
-          Properties.Settings.Default.Save();
+          favoriteWorkItems.Add(r);
+          _SaveFavoriteItems();
+          });
+
+      paneView.OnRemoveFavorite()
+        .Subscribe(item =>
+          {
+          favoriteWorkItems.Remove(item);
+          _SaveFavoriteItems();
           });
       }
 
@@ -146,6 +151,14 @@ namespace TFSTasksInOutlook
           appointment.Save();
           }
         }
+      }
+
+    private void _SaveFavoriteItems()
+      {
+      var coll = new System.Collections.Specialized.StringCollection();
+      coll.AddRange(favoriteWorkItems.Select(wi => wi.Id.ToString()).ToArray());
+      Properties.Settings.Default.FavouriteWorkItems = coll;
+      Properties.Settings.Default.Save();
       }
     }
   }

@@ -16,28 +16,21 @@
       <converters:BooleanInverterConverter/>
       <BooleanToVisibilityConverter/>
     </converters:ValueConverterGroup>
-
-    <Style x:Key="TaskDataItem" TargetType="{x:Type Grid}">
+   
+    <Style x:Key="ListBoxItemBase" TargetType="{x:Type ListBoxItem}">
       <Style.Triggers>
-        <Trigger Property="IsMouseOver" Value="False">
-          <Setter Property="Background" Value="{x:Null}" />
+        <Trigger Property="IsSelected" Value="True">
+          <Setter Property="Foreground" Value="Black" />
+        </Trigger>
+        <Trigger Property="IsFocused" Value="True">
+          <Setter Property="Foreground" Value="Black" />
         </Trigger>
         <Trigger Property="IsMouseOver" Value="True">
-          <Setter Property="Background" Value="LightBlue" />
           <Setter Property="Cursor" Value="Hand" />
         </Trigger>
       </Style.Triggers>
-    </Style>
-
-    <Style TargetType="{x:Type ListBoxItem}">
-      <Style.Triggers>
-        <Trigger Property="IsSelected" Value="True" >
-          <Setter Property="Background" Value="Transparent" />
-          <Setter Property="Foreground" Value="Black" />
-        </Trigger>
-      </Style.Triggers>
       <Style.Resources>
-        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="LightBlue" />
       </Style.Resources>
     </Style>
     
@@ -50,6 +43,17 @@
           <Setter Property="Fill" Value="Green" />
         </DataTrigger>
       </Style.Triggers>
+    </Style>
+
+    <ContextMenu x:Key="FavContextMenu">
+      <MenuItem Header="Remove from favorites" x:Name="FavRemove"
+            Command="{Binding PlacementTarget.Tag.DataContext.RemoveFavorite, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}}"
+            CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+    </ContextMenu>
+
+    <Style x:Key="FavListBoxItem" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource ListBoxItemBase}">
+      <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
+      <Setter Property="ContextMenu" Value="{StaticResource FavContextMenu}" />
     </Style>
   </UserControl.Resources>
   
@@ -71,10 +75,11 @@
           </Grid.RowDefinitions>
 
           <ListBox x:Name="FavouriteTasks" Grid.Row="0" HorizontalContentAlignment="Stretch" ItemsSource="{Binding}"
-             ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+             ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+             ItemContainerStyle="{StaticResource FavListBoxItem}">
             <ListBox.ItemTemplate>
               <DataTemplate>
-                <Grid HorizontalAlignment="Stretch" Margin="0,4,4,0"  Style="{StaticResource TaskDataItem}">
+                <Grid HorizontalAlignment="Stretch" Margin="0,2,2,2">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="4" />
                     <ColumnDefinition />
@@ -192,7 +197,7 @@
              ScrollViewer.HorizontalScrollBarVisibility="Hidden" Visibility="{Binding Path=Busy, Converter={StaticResource InvertAndVisibilitate}}">
             <ListBox.ItemTemplate>
               <DataTemplate>
-                <Grid HorizontalAlignment="Stretch" Margin="0,4,4,0"  Style="{StaticResource TaskDataItem}">
+                <Grid HorizontalAlignment="Stretch" Margin="0,2,2,2">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="4" />
                     <ColumnDefinition />

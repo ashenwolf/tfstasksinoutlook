@@ -180,6 +180,7 @@
     can be found.
   -->
   <ItemGroup>
+    <Compile Include="DelegateCommand.cs" />
     <Compile Include="ITFSTaskPaneView.cs" />
     <Compile Include="TextBoxMask.cs" />
     <Compile Include="TFSProxy.cs" />
