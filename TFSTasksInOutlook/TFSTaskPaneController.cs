@@ -13,7 +13,7 @@ namespace TFSTasksInOutlook
   {
   public class WorkItemInfo
     {
-    public long   Id {get; set;}
+    public long Id { get; set; }
     public string Title { get; set; }
     public double CompletedWork { get; set; }
     public string ItemType { get; set; }
@@ -63,8 +63,8 @@ namespace TFSTasksInOutlook
           .ObserveOn(DispatcherScheduler.Current)
           .Subscribe(wi =>
             {
-            wi.ToList().ForEach(item => favoriteWorkItems.Add(item));
-            paneView.SetBusyAddFav(false);
+              wi.ToList().ForEach(item => favoriteWorkItems.Add(item));
+              paneView.SetBusyAddFav(false);
             });
         }
       }
@@ -81,8 +81,8 @@ namespace TFSTasksInOutlook
         .ObserveOn(DispatcherScheduler.Current)
         .Subscribe(r =>
           {
-          paneView.SetTasksList(r);
-          paneView.SetBusyGetTasks(false);
+            paneView.SetTasksList(r);
+            paneView.SetBusyGetTasks(false);
           });
 
       paneView.OnTaskDoubleClicked().Subscribe(t => _CreateItemInCalendar(t));
@@ -97,15 +97,15 @@ namespace TFSTasksInOutlook
         .Where(r => r != null)
         .Subscribe(r =>
           {
-          favoriteWorkItems.Add(r);
-          _SaveFavoriteItems();
+            favoriteWorkItems.Add(r);
+            _SaveFavoriteItems();
           });
 
       paneView.OnRemoveFavorite()
         .Subscribe(item =>
           {
-          favoriteWorkItems.Remove(item);
-          _SaveFavoriteItems();
+            favoriteWorkItems.Remove(item);
+            _SaveFavoriteItems();
           });
       }
 
@@ -146,11 +146,36 @@ namespace TFSTasksInOutlook
         if (dstart > minDate && dend > minDate)
           {
           var folder = expl.CurrentFolder as Microsoft.Office.Interop.Outlook.Folder;
-          var appointment = folder.Items.Add("IPM.Appointment") as Microsoft.Office.Interop.Outlook.AppointmentItem;
-          appointment.Subject = "#" + item.Id + " " + item.Title;
-          appointment.Start = dstart;
-          appointment.End = dend;
-          appointment.Save();
+
+          // Criteria for any appointment, overlapping with [Start, End] interval
+          string restrictCriteria = "[Start] <= '" + dend.ToString("g") + "'" +
+                          " AND [End] >= '" + dstart.ToString("g") + "'";
+
+          
+          // Filter items according to the criteria and add fake item to the end 
+          // as an artifitial upper boundary
+          var items = folder.Items;
+          items.IncludeRecurrences = true;
+          items.Sort("[Start]", Type.Missing);
+          items = items.Restrict(restrictCriteria);
+
+          var appointments = items
+            .Cast<Microsoft.Office.Interop.Outlook.AppointmentItem>()
+            .Select(i => new { Start = i.Start, End = i.End })
+            .ToList();
+          appointments.Add(new { Start = dend, End = dend.AddHours(1) });
+
+          Observable.ToObservable(appointments)
+            .Where(i => i.End > dstart)
+            .Subscribe(i =>
+              {
+                if (dstart < i.Start)
+                  _AddAppointment(folder.Items,
+                    "#" + item.Id + " " + item.Title,
+                    dstart, i.Start);
+
+                dstart = i.End;
+              });
           }
         }
       }
@@ -169,6 +194,17 @@ namespace TFSTasksInOutlook
       coll.AddRange(projects.OrderBy(s => s).ToArray());
       Properties.Settings.Default.TfsProjects = coll;
       Properties.Settings.Default.Save();
+      }
+
+    private void _AddAppointment(Microsoft.Office.Interop.Outlook.Items items,
+      string subject,
+      DateTime start, DateTime end)
+      {
+      var appointment = items.Add("IPM.Appointment") as Microsoft.Office.Interop.Outlook.AppointmentItem;
+      appointment.Subject = subject;
+      appointment.Start = start;
+      appointment.End = end;
+      appointment.Save();
       }
     }
   }
