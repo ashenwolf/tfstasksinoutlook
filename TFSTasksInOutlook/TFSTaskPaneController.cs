@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Collections.ObjectModel;
 using System.Windows;
+using Microsoft.Office.Interop.Outlook;
 
 namespace TFSTasksInOutlook
   {
@@ -130,52 +131,75 @@ namespace TFSTasksInOutlook
         }
       }
 
+    private void _CreateNewItemsInCalendar(WorkItemInfo item, View view, Explorer explorer)
+      {
+      var minDate = DateTime.Today - TimeSpan.FromDays(365);
+      var calView = view as Microsoft.Office.Interop.Outlook.CalendarView;
+      var dstart = calView.SelectedStartTime;
+      var dend = calView.SelectedEndTime;
+
+      if (dstart > minDate && dend > minDate)
+        {
+        var folder = explorer.CurrentFolder as Microsoft.Office.Interop.Outlook.Folder;
+
+        // Criteria for any appointment, overlapping with [Start, End] interval
+        string restrictCriteria = "[Start] <= '" + dend.ToString("g") + "'" +
+                        " AND [End] >= '" + dstart.ToString("g") + "'";
+
+
+        // Filter items according to the criteria and add fake item to the end 
+        // as an artifitial upper boundary
+        var items = folder.Items;
+        items.IncludeRecurrences = true;
+        items.Sort("[Start]", Type.Missing);
+        items = items.Restrict(restrictCriteria);
+
+        var appointments = items
+          .Cast<Microsoft.Office.Interop.Outlook.AppointmentItem>()
+          .Select(i => new { Start = i.Start, End = i.End })
+          .ToList();
+        appointments.Add(new { Start = dend, End = dend.AddHours(1) });
+
+        Observable.ToObservable(appointments)
+          .Where(i => i.End > dstart)
+          .Subscribe(i =>
+          {
+            if (dstart < i.Start)
+              _AddAppointment(folder.Items,
+                "#" + item.Id + " " + item.Title,
+                dstart, i.Start);
+
+            dstart = i.End;
+          });
+        }
+      }
+
+    private void _UpdateItemsInCalendar(WorkItemInfo item, View view, Explorer explorer)
+      {
+      foreach (var selected in explorer.Selection)
+        {
+        if (selected is AppointmentItem)
+          {
+          var appointment = selected as AppointmentItem;
+          appointment.Subject = "#" + item.Id + " " + appointment.Subject;
+          appointment.Save();
+          }
+        }
+      }
+
     private void _CreateItemInCalendar(WorkItemInfo item)
       {
-      var minDate = DateTime.Today;
-      minDate -= TimeSpan.FromDays(365);
-
       var expl = Globals.ThisAddIn.Application.ActiveExplorer();
-      var view = expl.CurrentView as Microsoft.Office.Interop.Outlook.View;
-      if (view.ViewType == Microsoft.Office.Interop.Outlook.OlViewType.olCalendarView)
+      var view = expl.CurrentView as View;
+      if (view.ViewType == OlViewType.olCalendarView)
         {
-        var calView = view as Microsoft.Office.Interop.Outlook.CalendarView;
-        var dstart = calView.SelectedStartTime;
-        var dend = calView.SelectedEndTime;
-
-        if (dstart > minDate && dend > minDate)
+        if (expl.Selection.Count > 0)
           {
-          var folder = expl.CurrentFolder as Microsoft.Office.Interop.Outlook.Folder;
-
-          // Criteria for any appointment, overlapping with [Start, End] interval
-          string restrictCriteria = "[Start] <= '" + dend.ToString("g") + "'" +
-                          " AND [End] >= '" + dstart.ToString("g") + "'";
-
-          
-          // Filter items according to the criteria and add fake item to the end 
-          // as an artifitial upper boundary
-          var items = folder.Items;
-          items.IncludeRecurrences = true;
-          items.Sort("[Start]", Type.Missing);
-          items = items.Restrict(restrictCriteria);
-
-          var appointments = items
-            .Cast<Microsoft.Office.Interop.Outlook.AppointmentItem>()
-            .Select(i => new { Start = i.Start, End = i.End })
-            .ToList();
-          appointments.Add(new { Start = dend, End = dend.AddHours(1) });
-
-          Observable.ToObservable(appointments)
-            .Where(i => i.End > dstart)
-            .Subscribe(i =>
-              {
-                if (dstart < i.Start)
-                  _AddAppointment(folder.Items,
-                    "#" + item.Id + " " + item.Title,
-                    dstart, i.Start);
-
-                dstart = i.End;
-              });
+          _UpdateItemsInCalendar(item, view, expl);
+          }
+        else
+          {
+          _CreateNewItemsInCalendar(item, view, expl);
           }
         }
       }
@@ -196,9 +220,7 @@ namespace TFSTasksInOutlook
       Properties.Settings.Default.Save();
       }
 
-    private void _AddAppointment(Microsoft.Office.Interop.Outlook.Items items,
-      string subject,
-      DateTime start, DateTime end)
+    private void _AddAppointment(Items items, string subject, DateTime start, DateTime end)
       {
       var appointment = items.Add("IPM.Appointment") as Microsoft.Office.Interop.Outlook.AppointmentItem;
       appointment.Subject = subject;
