@@ -15,6 +15,7 @@ namespace TFSTasksInOutlook
     IObservable<long> OnAddFavTask();
     IObservable<WorkItemInfo> OnRemoveFavorite();
 
+    void SetProjectsList(IEnumerable<string> projects);
     void SetTasksList(IEnumerable<WorkItemInfo> tasks);
     void SetFavTaskList(IEnumerable<WorkItemInfo> tasks);
     void SetBusyGetTasks(bool busy);

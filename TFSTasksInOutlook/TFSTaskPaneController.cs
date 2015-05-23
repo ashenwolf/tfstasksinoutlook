@@ -35,13 +35,17 @@ namespace TFSTasksInOutlook
   class TFSTaskPaneController
     {
     private TFSProxy tfsProxy = new TFSProxy();
+    private Dataset.TFSTasksStorage dataset = new Dataset.TFSTasksStorage();
+
     private ITFSTaskPaneView paneView;
     private ObservableCollection<WorkItemInfo> favoriteWorkItems;
 
     public TFSTaskPaneController(ITFSTaskPaneView pane)
       {
+      dataset.Load();
       paneView = pane;
       favoriteWorkItems = new ObservableCollection<WorkItemInfo>();
+      paneView.SetProjectsList(dataset.TfsProjects);
       paneView.SetFavTaskList(favoriteWorkItems);
 
       _SubscribeObservables();
@@ -51,16 +55,16 @@ namespace TFSTasksInOutlook
     private void _LoadFavorites()
       {
       var ids = new List<string>[] { new List<string>() };
-      if (Properties.Settings.Default.FavoriteWorkItems != null && Properties.Settings.Default.FavoriteWorkItems.Count > 0)
+      if (dataset.FavoriteWorkItems != null && dataset.FavoriteWorkItems.Count > 0)
         {
-        foreach (var id in Properties.Settings.Default.FavoriteWorkItems)
+        foreach (var id in dataset.FavoriteWorkItems)
           ids[0].Add(id);
 
         favoriteWorkItems.Clear();
         ids.ToObservable()
           .Do(_ => paneView.SetBusyAddFav(true))
           .ObserveOn(Scheduler.Default)
-          .Select(x => tfsProxy.GetTasksByIds(x))
+          .Select(x => tfsProxy.GetTasksByIds(dataset.TfsUri, x))
           .ObserveOn(DispatcherScheduler.Current)
           .Subscribe(wi =>
             {
@@ -78,7 +82,7 @@ namespace TFSTasksInOutlook
 
       paneView.OnTaskFilterChanged()
         .ObserveOn(Scheduler.Default)
-        .Select(s => tfsProxy.GetTasks(s))
+        .Select(s => tfsProxy.GetTasks(dataset.TfsUri, s))
         .ObserveOn(DispatcherScheduler.Current)
         .Subscribe(r =>
           {
@@ -112,7 +116,7 @@ namespace TFSTasksInOutlook
 
     private WorkItemInfo _GetTaskInfo(long id)
       {
-      return tfsProxy.GetTaskInfo(id);
+      return tfsProxy.GetTaskInfo(dataset.TfsUri, id);
       }
 
     private void _OpenReportsPageInBrowser()
@@ -125,7 +129,7 @@ namespace TFSTasksInOutlook
       var tfsServer = tfsProxy.GetNewTfsServer();
       if (tfsServer != null)
         {
-        Properties.Settings.Default.TfsUri = tfsServer.TfsUri;
+        dataset.TfsUri = tfsServer.TfsUri;
         _SaveProjectsList(tfsServer.TfsProjects);
         _LoadFavorites();
         }
@@ -206,18 +210,15 @@ namespace TFSTasksInOutlook
 
     private void _SaveFavoriteItems()
       {
-      var coll = new System.Collections.Specialized.StringCollection();
-      coll.AddRange(favoriteWorkItems.Select(wi => wi.Id.ToString()).ToArray());
-      Properties.Settings.Default.FavoriteWorkItems = coll;
-      Properties.Settings.Default.Save();
+      dataset.FavoriteWorkItems = favoriteWorkItems.Select(wi => wi.Id.ToString()).ToList();
+      dataset.Save();
       }
 
     private void _SaveProjectsList(string[] projects)
       {
-      var coll = new System.Collections.Specialized.StringCollection();
-      coll.AddRange(projects.OrderBy(s => s).ToArray());
-      Properties.Settings.Default.TfsProjects = coll;
-      Properties.Settings.Default.Save();
+      dataset.TfsProjects = projects.OrderBy(s => s).ToList();
+      paneView.SetProjectsList(dataset.TfsProjects);
+      dataset.Save();
       }
 
     private void _AddAppointment(Items items, string subject, DateTime start, DateTime end)

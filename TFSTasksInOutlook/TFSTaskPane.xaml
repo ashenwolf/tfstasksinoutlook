@@ -157,7 +157,7 @@
               <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
             <TextBlock Text="Project filter: " Grid.Column="0" VerticalAlignment="Center" />
-            <ComboBox x:Name="TFSProjects" HorizontalAlignment="Stretch" Grid.Column="1" ItemsSource="{Binding Source={x:Static properties:Settings.Default}, Path=TfsProjects}" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}"></ComboBox>
+            <ComboBox x:Name="TFSProjects" HorizontalAlignment="Stretch" Grid.Column="1" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}"></ComboBox>
           </Grid>
 
           <Grid x:Name="WITypes" Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,4" IsEnabled="{Binding Path=Busy, Converter={StaticResource BoolInv}}">

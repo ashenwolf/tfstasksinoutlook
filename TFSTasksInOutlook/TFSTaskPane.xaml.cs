@@ -136,6 +136,11 @@ namespace TFSTasksInOutlook
       return onRemoveFavorite;
       }
 
+    public void SetProjectsList(IEnumerable<string> projects)
+      {
+      TFSProjects.ItemsSource = projects;
+      }
+
     public void SetTasksList(IEnumerable<WorkItemInfo> tasks)
       {
       TFSTasks.ItemsSource = tasks;

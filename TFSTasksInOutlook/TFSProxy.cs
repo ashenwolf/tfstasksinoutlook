@@ -39,7 +39,7 @@ namespace TFSTasksInOutlook
       return null;
       }
 
-    public IEnumerable<WorkItemInfo> GetTasks(WorkItemFilter s)
+    public IEnumerable<WorkItemInfo> GetTasks(string tfsUri, WorkItemFilter s)
       {
       var q =
         @"Select [Id], [Title], [Completed Work], [System.TeamProject] From WorkItems " +
@@ -48,19 +48,19 @@ namespace TFSTasksInOutlook
         _GetItemTypeFilter(s) +
         _GetStateFilter(s) +
         @"Order By [Work Item Type] ";
-      return _QueryAll(q);
+      return _QueryAll(tfsUri, q);
       }
 
-    public WorkItemInfo GetTaskInfo(long id)
+    public WorkItemInfo GetTaskInfo(string tfsUri, long id)
       {
       var q = @"Select [Id], [Title], [Completed Work], [System.TeamProject] From WorkItems Where [Id] = " + id.ToString();
-      return _QueryOne(q);
+      return _QueryOne(tfsUri, q);
       }
 
-    public IEnumerable<WorkItemInfo> GetTasksByIds(IEnumerable<string> ids)
+    public IEnumerable<WorkItemInfo> GetTasksByIds(string tfsUri, IEnumerable<string> ids)
       {
       var q = @"Select [Id], [Title], [Completed Work], [System.TeamProject] From WorkItems Where [Id] IN (" + String.Join(", ", ids) +") ";
-      return _QueryAll(q);
+      return _QueryAll(tfsUri, q);
       }
 
     private string _GetItemTypeFilter(WorkItemFilter s)
@@ -99,12 +99,12 @@ namespace TFSTasksInOutlook
             };
       }
 
-    private IEnumerable<WorkItemInfo> _QueryAll(string wiql)
+    private IEnumerable<WorkItemInfo> _QueryAll(string tfsUri, string wiql)
       {
       var tasks = new List<WorkItemInfo>();
       try
         {
-        TfsTeamProjectCollection tpc = new TfsTeamProjectCollection(new Uri(Properties.Settings.Default.TfsUri));
+        TfsTeamProjectCollection tpc = new TfsTeamProjectCollection(new Uri(tfsUri));
         WorkItemStore workItemStore = (WorkItemStore)tpc.GetService(typeof(WorkItemStore));
         WorkItemCollection queryResults = workItemStore.Query(wiql);
         foreach (WorkItem wi in queryResults)
@@ -119,9 +119,9 @@ namespace TFSTasksInOutlook
       return tasks;
       }
 
-    private WorkItemInfo _QueryOne(string wiql)
+    private WorkItemInfo _QueryOne(string tfsUri, string wiql)
       {
-      return _QueryAll(wiql).FirstOrDefault();
+      return _QueryAll(tfsUri, wiql).FirstOrDefault();
       }
     }
   }

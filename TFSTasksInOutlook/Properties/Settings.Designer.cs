@@ -23,40 +23,6 @@ namespace TFSTasksInOutlook.Properties {
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string TfsUri {
-            get {
-                return ((string)(this["TfsUri"]));
-            }
-            set {
-                this["TfsUri"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection TfsProjects {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["TfsProjects"]));
-            }
-            set {
-                this["TfsProjects"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection FavoriteWorkItems {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["FavoriteWorkItems"]));
-            }
-            set {
-                this["FavoriteWorkItems"] = value;
-            }
-        }
-        
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("http://w0141db05/Reports_INSTANCE_2/Pages/Report.aspx?ItemPath=%2fTfsReports%2fDe" +
