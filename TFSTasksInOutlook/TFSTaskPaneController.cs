@@ -9,6 +9,7 @@ using System.Text;
 using System.Collections.ObjectModel;
 using System.Windows;
 using Microsoft.Office.Interop.Outlook;
+using System.Text.RegularExpressions;
 
 namespace TFSTasksInOutlook
   {
@@ -185,7 +186,11 @@ namespace TFSTasksInOutlook
         if (selected is AppointmentItem)
           {
           var appointment = selected as AppointmentItem;
-          appointment.Subject = "#" + item.Id + " " + appointment.Subject;
+          Regex rgx = new Regex(@"^(#\d+)");
+          if (rgx.IsMatch(appointment.Subject.Trim()))
+            appointment.Subject = rgx.Replace(appointment.Subject, "#" + item.Id, 1);
+          else
+            appointment.Subject = "#" + item.Id + " " + appointment.Subject;
           appointment.Save();
           }
         }
