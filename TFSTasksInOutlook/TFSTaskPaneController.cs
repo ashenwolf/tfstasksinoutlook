@@ -13,26 +13,6 @@ using System.Text.RegularExpressions;
 
 namespace TFSTasksInOutlook
   {
-  public class WorkItemInfo
-    {
-    public long Id { get; set; }
-    public string Title { get; set; }
-    public double CompletedWork { get; set; }
-    public string ItemType { get; set; }
-    public string Project { get; set; }
-    }
-
-  public class WorkItemFilter
-    {
-    public string Project { get; set; }
-    public bool ShowTasks { get; set; }
-    public bool ShowBugs { get; set; }
-    public bool ShowProposed { get; set; }
-    public bool ShowActive { get; set; }
-    public bool ShowResolved { get; set; }
-    public bool ShowClosed { get; set; }
-    }
-
   class TFSTaskPaneController
     {
     private TFSProxy tfsProxy = new TFSProxy();
@@ -55,24 +35,14 @@ namespace TFSTasksInOutlook
 
     private void _LoadFavorites()
       {
-      var ids = new List<string>[] { new List<string>() };
-      if (dataset.FavoriteWorkItems != null && dataset.FavoriteWorkItems.Count > 0)
-        {
-        foreach (var id in dataset.FavoriteWorkItems)
-          ids[0].Add(id);
-
-        favoriteWorkItems.Clear();
-        ids.ToObservable()
-          .Do(_ => paneView.SetBusyAddFav(true))
-          .ObserveOn(Scheduler.Default)
-          .Select(x => tfsProxy.GetTasksByIds(dataset.TfsUri, x))
-          .ObserveOn(DispatcherScheduler.Current)
-          .Subscribe(wi =>
-            {
-              wi.ToList().ForEach(item => favoriteWorkItems.Add(item));
-              paneView.SetBusyAddFav(false);
-            });
-        }
+      favoriteWorkItems.Clear();
+      dataset.FavoriteWorkItems
+        .ToObservable()
+        .Subscribe(wi =>
+          {
+            favoriteWorkItems.Add(wi);
+            paneView.SetBusyAddFav(false);
+          });
       }
 
     private void _SubscribeObservables()
@@ -234,7 +204,7 @@ namespace TFSTasksInOutlook
 
     private void _SaveFavoriteItems()
       {
-      dataset.FavoriteWorkItems = favoriteWorkItems.Select(wi => wi.Id.ToString()).ToList();
+      dataset.FavoriteWorkItems = favoriteWorkItems.ToList();
       dataset.Save();
       }
 

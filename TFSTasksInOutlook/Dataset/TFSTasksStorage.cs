@@ -12,13 +12,13 @@ namespace TFSTasksInOutlook.Dataset
     {
     public string TfsUri { get; set; }
     public List<string> TfsProjects { get; set; }
-    public List<string> FavoriteWorkItems { get; set; }
+    public List<WorkItemInfo> FavoriteWorkItems { get; set; }
 
     public TFSTasksStorage()
       {
       TfsUri = "";
       TfsProjects = new List<string>();
-      FavoriteWorkItems = new List<string>();
+      FavoriteWorkItems = new List<WorkItemInfo>();
       }
 
     public void Load()
