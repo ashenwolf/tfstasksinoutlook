@@ -143,41 +143,59 @@ namespace TFSTasksInOutlook
       var dstart = calView.SelectedStartTime;
       var dend = calView.SelectedEndTime;
 
-      if (dstart > minDate && dend > minDate)
+      if (dstart <= minDate || dend <= minDate)
+        return;
+      
+      var folder = explorer.CurrentFolder as Microsoft.Office.Interop.Outlook.Folder;
+
+      // Check for multiday event
+      // Add 8-hour event for each day 9:00 - 17:00
+      if (dend - dstart >= TimeSpan.FromDays(1))
         {
-        var folder = explorer.CurrentFolder as Microsoft.Office.Interop.Outlook.Folder;
-
-        // Criteria for any appointment, overlapping with [Start, End] interval
-        string restrictCriteria = "[Start] <= '" + dend.ToString("g") + "'" +
-                        " AND [End] >= '" + dstart.ToString("g") + "'";
-
-
-        // Filter items according to the criteria and add fake item to the end 
-        // as an artifitial upper boundary
-        var items = folder.Items;
-        items.IncludeRecurrences = true;
-        items.Sort("[Start]", Type.Missing);
-        items = items.Restrict(restrictCriteria);
-
-        var appointments = items
-          .Cast<Microsoft.Office.Interop.Outlook.AppointmentItem>()
-          .Where(i => !i.AllDayEvent)
-          .Select(i => new { Start = i.Start, End = i.End })
-          .ToList();
-        appointments.Add(new { Start = dend, End = dend.AddHours(1) });
-
-        Observable.ToObservable(appointments)
-          .Where(i => i.End > dstart)
+        Observable.Generate(
+          dstart + TimeSpan.FromHours(9),
+          date => date <= dend,
+          date => date + TimeSpan.FromDays(1),
+          date => new { Start = date, End = date + TimeSpan.FromHours(8) })
           .Subscribe(i =>
-          {
-            if (dstart < i.Start)
-              _AddAppointment(folder.Items,
-                "#" + item.Id + " " + item.Title,
-                dstart, i.Start);
+            _AddAppointment(folder.Items,
+              "#" + item.Id + " " + item.Title,
+              i.Start, i.End));
 
-            dstart = i.End;
-          });
+        return;
         }
+
+      // Handle single day event differently - check for existing appointments
+      // Criteria for any appointment, overlapping with [Start, End] interval
+      string restrictCriteria = "[Start] <= '" + dend.ToString("g") + "'" +
+                      " AND [End] >= '" + dstart.ToString("g") + "'";
+
+
+      // Filter items according to the criteria and add fake item to the end 
+      // as an artifitial upper boundary
+      var items = folder.Items;
+      items.IncludeRecurrences = true;
+      items.Sort("[Start]", Type.Missing);
+      items = items.Restrict(restrictCriteria);
+
+      var appointments = items
+        .Cast<Microsoft.Office.Interop.Outlook.AppointmentItem>()
+        .Where(i => !i.AllDayEvent)
+        .Select(i => new { Start = i.Start, End = i.End })
+        .ToList();
+      appointments.Add(new { Start = dend, End = dend.AddHours(1) });
+
+      Observable.ToObservable(appointments)
+        .Where(i => i.End > dstart)
+        .Subscribe(i =>
+        {
+          if (dstart < i.Start)
+            _AddAppointment(folder.Items,
+              "#" + item.Id + " " + item.Title,
+              dstart, i.Start);
+
+          dstart = i.End;
+        });
       }
 
     private void _UpdateItemsInCalendar(WorkItemInfo item, View view, Explorer explorer)
