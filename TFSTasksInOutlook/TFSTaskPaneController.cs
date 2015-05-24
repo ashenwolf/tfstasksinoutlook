@@ -161,6 +161,7 @@ namespace TFSTasksInOutlook
 
         var appointments = items
           .Cast<Microsoft.Office.Interop.Outlook.AppointmentItem>()
+          .Where(i => !i.AllDayEvent)
           .Select(i => new { Start = i.Start, End = i.End })
           .ToList();
         appointments.Add(new { Start = dend, End = dend.AddHours(1) });
