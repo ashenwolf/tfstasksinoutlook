@@ -52,7 +52,7 @@
     </ContextMenu>
 
     <ContextMenu x:Key="TaskContextMenu">
-      <MenuItem Header="Copy tas info to clipboard" x:Name="TaskCopyToClipboard"
+      <MenuItem Header="Copy task info to clipboard" x:Name="TaskCopyToClipboard"
             Command="{Binding PlacementTarget.Tag.DataContext.CopyToClipboard, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}}"
             CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
     </ContextMenu>
