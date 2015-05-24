@@ -83,6 +83,17 @@ namespace TFSTasksInOutlook
             favoriteWorkItems.Remove(item);
             _SaveFavoriteItems();
           });
+
+      paneView.OnCopyToClipboard()
+        .Subscribe(item =>
+        {
+          _CopyToClipboard(item);
+        });
+      }
+
+    private void _CopyToClipboard(WorkItemInfo item)
+      {
+      Clipboard.SetText(item.ItemType + " #" + item.Id + ": " + item.Title);
       }
 
     private WorkItemInfo _GetTaskInfo(long id)
@@ -148,12 +159,15 @@ namespace TFSTasksInOutlook
       items.Sort("[Start]", Type.Missing);
       items = items.Restrict(restrictCriteria);
 
-      var appointments = items
-        .Cast<Microsoft.Office.Interop.Outlook.AppointmentItem>()
-        .Where(i => !i.AllDayEvent)
-        .Select(i => new { Start = i.Start, End = i.End })
-        .ToList();
-      appointments.Add(new { Start = dend, End = dend.AddHours(1) });
+              WorkItemInfoToText(item),
+        Observable.ToObservable(appointments)
+          .Where(i => i.End > dstart)
+          .Subscribe(i =>
+          {
+            if (dstart < i.Start)
+              _AddAppointment(folder.Items,
+                _WorkItemInfoToText(item),
+                dstart, i.Start);
 
       Observable.ToObservable(appointments)
         .Where(i => i.End > dstart)
@@ -179,7 +193,7 @@ namespace TFSTasksInOutlook
           if (rgx.IsMatch(appointment.Subject.Trim()))
             appointment.Subject = rgx.Replace(appointment.Subject, "#" + item.Id, 1);
           else
-            appointment.Subject = "#" + item.Id + " " + appointment.Subject;
+            appointment.Subject = _WorkItemInfoToText(item);
           appointment.Save();
           }
         }
@@ -222,6 +236,11 @@ namespace TFSTasksInOutlook
       appointment.Start = start;
       appointment.End = end;
       appointment.Save();
+      }
+
+    private string _WorkItemInfoToText(WorkItemInfo wi)
+      {
+      return "#" + wi.Id + " " + wi.Title;
       }
     }
   }

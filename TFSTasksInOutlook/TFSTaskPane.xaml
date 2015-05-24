@@ -51,6 +51,12 @@
             CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
     </ContextMenu>
 
+    <ContextMenu x:Key="TaskContextMenu">
+      <MenuItem Header="Copy tas info to clipboard" x:Name="TaskCopyToClipboard"
+            Command="{Binding PlacementTarget.Tag.DataContext.CopyToClipboard, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}}"
+            CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+    </ContextMenu>
+
     <Style x:Key="FavListBoxItem" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource ListBoxItemBase}">
       <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
       <Setter Property="ContextMenu" Value="{StaticResource FavContextMenu}" />
@@ -58,6 +64,7 @@
 
     <Style x:Key="TasksListBoxItem" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource ListBoxItemBase}">
       <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
+      <Setter Property="ContextMenu" Value="{StaticResource TaskContextMenu}" />
     </Style>
   </UserControl.Resources>
   

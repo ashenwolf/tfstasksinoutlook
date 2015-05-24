@@ -29,14 +29,18 @@ namespace TFSTasksInOutlook
     private IObservable<WorkItemInfo> onTaskDoubleClicked;
     private IObservable<long> onAddFavTask;
     private IObservable<WorkItemInfo> onRemoveFavorite;
+    private IObservable<WorkItemInfo> onCopyToClipboard;
 
     private ICommand removeFavorite;
+    private ICommand copyToClipboard;
 
-    public class RemoveFavoriteEventArgs: EventArgs {
-      public RemoveFavoriteEventArgs(WorkItemInfo item) { Item = item; }
+    public class WorkItemActionEventArgs: EventArgs {
+      public WorkItemActionEventArgs(WorkItemInfo item) { Item = item; }
       public WorkItemInfo Item { get; private set; }
       }
-    public event EventHandler<RemoveFavoriteEventArgs> OnRemoveFavoriteEvent;
+
+    public event EventHandler<WorkItemActionEventArgs> OnRemoveFavoriteEvent;
+    public event EventHandler<WorkItemActionEventArgs> OnCopyToClipboardEvent;
 
     public static readonly DependencyProperty BusyProperty =
       DependencyProperty.Register("Busy", typeof(bool), typeof(TFSTaskPane));
@@ -62,8 +66,19 @@ namespace TFSTasksInOutlook
         {
         return removeFavorite ?? (removeFavorite = new DelegateCommand(null, p =>
           {
-            OnRemoveFavoriteEvent(this, new RemoveFavoriteEventArgs(p as WorkItemInfo));
+            OnRemoveFavoriteEvent(this, new WorkItemActionEventArgs(p as WorkItemInfo));
           }));
+        }
+      }
+
+    public ICommand CopyToClipboard
+      {
+      get
+        {
+        return copyToClipboard ?? (copyToClipboard = new DelegateCommand(null, p =>
+        {
+          OnCopyToClipboardEvent(this, new WorkItemActionEventArgs(p as WorkItemInfo));
+        }));
         }
       }
 
@@ -101,7 +116,11 @@ namespace TFSTasksInOutlook
 
       onGoToReportClicked = Observable.FromEventPattern(GoToReportWebsite, "Click").Select(_ => Unit.Default);
 
-      onRemoveFavorite = Observable.FromEventPattern<RemoveFavoriteEventArgs>(this, "OnRemoveFavoriteEvent")
+      onRemoveFavorite = Observable.FromEventPattern<WorkItemActionEventArgs>(this, "OnRemoveFavoriteEvent")
+        .Where(e => e.EventArgs.Item != null)
+        .Select(e => e.EventArgs.Item);
+
+      onCopyToClipboard = Observable.FromEventPattern<WorkItemActionEventArgs>(this, "OnCopyToClipboardEvent")
         .Where(e => e.EventArgs.Item != null)
         .Select(e => e.EventArgs.Item);
       }
@@ -134,6 +153,11 @@ namespace TFSTasksInOutlook
     public IObservable<WorkItemInfo> OnRemoveFavorite()
       {
       return onRemoveFavorite;
+      }
+
+    public IObservable<WorkItemInfo> OnCopyToClipboard()
+      {
+      return onCopyToClipboard;
       }
 
     public void SetProjectsList(IEnumerable<string> projects)
