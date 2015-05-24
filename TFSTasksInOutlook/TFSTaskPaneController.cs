@@ -182,7 +182,7 @@ namespace TFSTasksInOutlook
           {
             if (dstart < i.Start)
               _AddAppointment(folder.Items,
-                "#" + item.Id + " " + item.Title,
+                _WorkItemInfoToText(item),
                 dstart, i.Start);
 
             dstart = i.End;
@@ -201,7 +201,7 @@ namespace TFSTasksInOutlook
           if (rgx.IsMatch(appointment.Subject.Trim()))
             appointment.Subject = rgx.Replace(appointment.Subject, "#" + item.Id, 1);
           else
-            appointment.Subject = "#" + item.Id + " " + appointment.Subject;
+            appointment.Subject = _WorkItemInfoToText(item);
           appointment.Save();
           }
         }
@@ -244,6 +244,11 @@ namespace TFSTasksInOutlook
       appointment.Start = start;
       appointment.End = end;
       appointment.Save();
+      }
+
+    private string _WorkItemInfoToText(WorkItemInfo wi)
+      {
+      return "#" + wi.Id + " " + wi.Title;
       }
     }
   }
