@@ -14,6 +14,7 @@ namespace TFSTasksInOutlook
     IObservable<WorkItemInfo> OnTaskDoubleClicked();
     IObservable<long> OnAddFavTask();
     IObservable<WorkItemInfo> OnRemoveFavorite();
+    IObservable<WorkItemInfo> OnCopyToClipboard();
 
     void SetProjectsList(IEnumerable<string> projects);
     void SetTasksList(IEnumerable<WorkItemInfo> tasks);

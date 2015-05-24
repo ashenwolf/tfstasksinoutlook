@@ -113,6 +113,17 @@ namespace TFSTasksInOutlook
             favoriteWorkItems.Remove(item);
             _SaveFavoriteItems();
           });
+
+      paneView.OnCopyToClipboard()
+        .Subscribe(item =>
+        {
+          _CopyToClipboard(item);
+        });
+      }
+
+    private void _CopyToClipboard(WorkItemInfo item)
+      {
+      Clipboard.SetText(item.ItemType + " #" + item.Id + ": " + item.Title);
       }
 
     private WorkItemInfo _GetTaskInfo(long id)
