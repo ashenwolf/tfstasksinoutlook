@@ -21,7 +21,7 @@ namespace TFSTasksInOutlook.Dataset
       FavoriteWorkItems = new List<WorkItemInfo>();
       }
 
-    public void Load()
+    static public TFSTasksStorage Load()
       {
       var path = _GetStoragePath();
       if (File.Exists(path))
@@ -30,14 +30,10 @@ namespace TFSTasksInOutlook.Dataset
         using (TextReader reader = new StreamReader(path))
           {
           var res = serializer.Deserialize(reader) as TFSTasksStorage;
-          if (res != null)
-            {
-            this.TfsUri = res.TfsUri;
-            this.TfsProjects = res.TfsProjects;
-            this.FavoriteWorkItems = res.FavoriteWorkItems;
-            }
+          if (res != null) return res;
           }
         }
+      return new TFSTasksStorage();
       }
 
     public void Save()
@@ -50,7 +46,7 @@ namespace TFSTasksInOutlook.Dataset
         }
       }
 
-    private string _GetStoragePath()
+    private static string _GetStoragePath()
       {
       var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"TfsTasksInOutlook\data.xml");
       if (!Directory.Exists(Path.GetDirectoryName(path)))

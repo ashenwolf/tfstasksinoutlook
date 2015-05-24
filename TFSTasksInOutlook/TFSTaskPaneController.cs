@@ -16,14 +16,13 @@ namespace TFSTasksInOutlook
   class TFSTaskPaneController
     {
     private TFSProxy tfsProxy = new TFSProxy();
-    private Dataset.TFSTasksStorage dataset = new Dataset.TFSTasksStorage();
+    private Dataset.TFSTasksStorage dataset = Dataset.TFSTasksStorage.Load();
 
     private ITFSTaskPaneView paneView;
     private ObservableCollection<WorkItemInfo> favoriteWorkItems;
 
     public TFSTaskPaneController(ITFSTaskPaneView pane)
       {
-      dataset.Load();
       paneView = pane;
       favoriteWorkItems = new ObservableCollection<WorkItemInfo>();
       paneView.SetProjectsList(dataset.TfsProjects);
