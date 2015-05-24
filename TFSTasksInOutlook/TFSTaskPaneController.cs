@@ -159,27 +159,24 @@ namespace TFSTasksInOutlook
       items.Sort("[Start]", Type.Missing);
       items = items.Restrict(restrictCriteria);
 
-              WorkItemInfoToText(item),
-        Observable.ToObservable(appointments)
-          .Where(i => i.End > dstart)
-          .Subscribe(i =>
-          {
-            if (dstart < i.Start)
-              _AddAppointment(folder.Items,
-                _WorkItemInfoToText(item),
-                dstart, i.Start);
+      var appointments = items
+        .Cast<Microsoft.Office.Interop.Outlook.AppointmentItem>()
+        .Where(i => !i.AllDayEvent)
+        .Select(i => new { Start = i.Start, End = i.End })
+        .ToList();
+      appointments.Add(new { Start = dend, End = dend.AddHours(1) });
 
       Observable.ToObservable(appointments)
         .Where(i => i.End > dstart)
         .Subscribe(i =>
-        {
+          {
           if (dstart < i.Start)
             _AddAppointment(folder.Items,
-              "#" + item.Id + " " + item.Title,
+              _WorkItemInfoToText(item),
               dstart, i.Start);
 
           dstart = i.End;
-        });
+          });
       }
 
     private void _UpdateItemsInCalendar(WorkItemInfo item, View view, Explorer explorer)
