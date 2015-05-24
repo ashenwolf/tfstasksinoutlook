@@ -205,6 +205,12 @@
   -->
   <ItemGroup>
     <Compile Include="Common\DelegateCommand.cs" />
+    <Compile Include="Components\FavWorkItemView.xaml.cs">
+      <DependentUpon>FavWorkItemView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Components\WorkItemInfoView.xaml.cs">
+      <DependentUpon>WorkItemInfoView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dataset\TFSTasksStorage.cs" />
     <Compile Include="ITFSTaskPaneView.cs" />
     <Compile Include="TextBoxMask.cs" />
@@ -266,15 +272,29 @@
     <EmbeddedResource Include="TFSTasks.xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\tfs-task.png" />
+    <Resource Include="Resources\tfs-task.png" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Components\FavWorkItemView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Components\Resources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Components\WorkItemInfoView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="TFSTaskPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\star.png" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

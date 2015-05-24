@@ -1,0 +1,55 @@
+﻿<UserControl x:Class="TFSTasksInOutlook.Components.FavWorkItemView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="93.991" d:DesignWidth="386.266">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Resources.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </UserControl.Resources>
+
+  <Grid HorizontalAlignment="Stretch" Margin="0,2,2,2">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="4" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+
+    <Grid.Width>
+      <Binding Path="ActualWidth" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type ScrollContentPresenter}}" />
+    </Grid.Width>
+
+    <Rectangle Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{StaticResource TaskDataItemTypeRect}" />
+    <Grid Grid.Column="1" Margin="4" Background="{x:Null}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <Grid Grid.Row="0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="{Binding Id}" Grid.Column="0" TextBlock.FontWeight="Bold" />
+        <TextBlock Text="{Binding Project}" Grid.Column="1" TextWrapping="Wrap" TextBlock.FontSize="11" HorizontalAlignment="Right" Foreground="Gray" />
+      </Grid>
+
+      <Grid Grid.Row="1" Margin="0,2,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="{Binding Title}" Grid.Column="0" TextWrapping="Wrap" TextBlock.FontSize="11" Grid.Row="1" HorizontalAlignment="Stretch" />
+        <StackPanel Orientation="Horizontal" Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="4,0,0,0">
+          <TextBlock Text="{Binding CompletedWork}" TextBlock.FontSize="11" HorizontalAlignment="Right" />
+          <TextBlock Text="h" TextBlock.FontSize="11" />
+        </StackPanel>
+      </Grid>
+    </Grid>
+  </Grid>
+</UserControl>

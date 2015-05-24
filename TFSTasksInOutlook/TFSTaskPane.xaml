@@ -4,68 +4,17 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:properties="clr-namespace:TFSTasksInOutlook.Properties"
-             xmlns:converters="clr-namespace:Converters"
              xmlns:ex="clr-namespace:Extensions"
+             xmlns:local="clr-namespace:TFSTasksInOutlook.Components"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
   <UserControl.Resources>
-    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
-    <converters:BooleanInverterConverter x:Key="BoolInv"/>
-    <converters:ValueConverterGroup x:Key="InvertAndVisibilitate">
-      <converters:BooleanInverterConverter/>
-      <BooleanToVisibilityConverter/>
-    </converters:ValueConverterGroup>
-   
-    <Style x:Key="TaskDataItemTypeRect" TargetType="{x:Type Rectangle}">
-      <Style.Triggers>
-        <DataTrigger Binding="{Binding ItemType}" Value="Bug">
-          <Setter Property="Fill" Value="Red" />
-        </DataTrigger>
-        <DataTrigger Binding="{Binding ItemType}" Value="Task">
-          <Setter Property="Fill" Value="Green" />
-        </DataTrigger>
-      </Style.Triggers>
-    </Style>
-
-    <Style x:Key="ListBoxItemBase" TargetType="{x:Type ListBoxItem}">
-      <Style.Triggers>
-        <Trigger Property="IsSelected" Value="True">
-          <Setter Property="Foreground" Value="Black" />
-        </Trigger>
-        <Trigger Property="IsFocused" Value="True">
-          <Setter Property="Foreground" Value="Black" />
-        </Trigger>
-        <Trigger Property="IsMouseOver" Value="True">
-          <Setter Property="Cursor" Value="Hand" />
-        </Trigger>
-      </Style.Triggers>
-      <Style.Resources>
-        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="LightBlue" />
-      </Style.Resources>
-    </Style>
-
-    <ContextMenu x:Key="FavContextMenu">
-      <MenuItem Header="Remove from favorites" x:Name="FavRemove"
-            Command="{Binding PlacementTarget.Tag.DataContext.RemoveFavorite, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}}"
-            CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-    </ContextMenu>
-
-    <ContextMenu x:Key="TaskContextMenu">
-      <MenuItem Header="Copy task info to clipboard" x:Name="TaskCopyToClipboard"
-            Command="{Binding PlacementTarget.Tag.DataContext.CopyToClipboard, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}}"
-            CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-    </ContextMenu>
-
-    <Style x:Key="FavListBoxItem" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource ListBoxItemBase}">
-      <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
-      <Setter Property="ContextMenu" Value="{StaticResource FavContextMenu}" />
-    </Style>
-
-    <Style x:Key="TasksListBoxItem" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource ListBoxItemBase}">
-      <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
-      <Setter Property="ContextMenu" Value="{StaticResource TaskContextMenu}" />
-    </Style>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Components/Resources.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
   </UserControl.Resources>
   
   <Grid Margin="5">
@@ -89,46 +38,8 @@
              ScrollViewer.HorizontalScrollBarVisibility="Hidden"
              ItemContainerStyle="{StaticResource FavListBoxItem}">
             <ListBox.ItemTemplate>
-              <DataTemplate>
-                <Grid HorizontalAlignment="Stretch" Margin="0,2,2,2">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="4" />
-                    <ColumnDefinition />
-                  </Grid.ColumnDefinitions>
-
-                  <Grid.Width>
-                    <Binding Path="ActualWidth" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type ScrollContentPresenter}}" />
-                  </Grid.Width>
-
-                  <Rectangle Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{StaticResource TaskDataItemTypeRect}" />
-                  <Grid Grid.Column="1" Margin="4" Background="{x:Null}">
-                    <Grid.RowDefinitions>
-                      <RowDefinition Height="Auto" />
-                      <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <Grid Grid.Row="0">
-                      <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                      </Grid.ColumnDefinitions>
-                      <TextBlock Text="{Binding Id}" Grid.Column="0" TextBlock.FontWeight="Bold" />
-                      <TextBlock Text="{Binding Project}" Grid.Column="1" TextWrapping="Wrap" TextBlock.FontSize="11" HorizontalAlignment="Right" Foreground="Gray" />
-                    </Grid>
-
-                    <Grid Grid.Row="1" Margin="0,2,0,0">
-                      <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                      </Grid.ColumnDefinitions>
-                      <TextBlock Text="{Binding Title}" Grid.Column="0" TextWrapping="Wrap" TextBlock.FontSize="11" Grid.Row="1" HorizontalAlignment="Stretch" />
-                      <StackPanel Orientation="Horizontal" Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="4,0,0,0">
-                        <TextBlock Text="{Binding CompletedWork}" TextBlock.FontSize="11" HorizontalAlignment="Right" />
-                        <TextBlock Text="h" TextBlock.FontSize="11" />
-                      </StackPanel>
-                    </Grid>
-                  </Grid>
-                </Grid>
+              <DataTemplate DataType="{x:Type local:FavWorkItemView}">
+                <local:FavWorkItemView />
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
@@ -208,33 +119,8 @@
              ScrollViewer.HorizontalScrollBarVisibility="Hidden" Visibility="{Binding Path=Busy, Converter={StaticResource InvertAndVisibilitate}}"
              ItemContainerStyle="{StaticResource TasksListBoxItem}">
             <ListBox.ItemTemplate>
-              <DataTemplate>
-                <Grid HorizontalAlignment="Stretch" Margin="0,2,2,2">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="4" />
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                  </Grid.ColumnDefinitions>
-
-                  <Grid.Width>
-                    <Binding Path="ActualWidth" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type ScrollContentPresenter}}" />
-                  </Grid.Width>
-
-                  <Rectangle Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{StaticResource TaskDataItemTypeRect}" />
-                  <Grid Grid.Column="1" Margin="4" Background="{x:Null}">
-                    <Grid.RowDefinitions>
-                      <RowDefinition Height="Auto" />
-                      <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Text="{Binding Id}" TextBlock.FontWeight="Bold" Grid.Row="0" />
-                    <TextBlock Text="{Binding Title}" TextWrapping="Wrap" TextBlock.FontSize="11" Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,2,0,0" />
-                  </Grid>
-                  <StackPanel Orientation="Horizontal" Grid.Column="2" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,4,4">
-                    <TextBlock Text="{Binding CompletedWork}" TextBlock.FontSize="11" HorizontalAlignment="Right" />
-                    <TextBlock Text="h" TextBlock.FontSize="11" />
-                  </StackPanel>
-                </Grid>
+              <DataTemplate DataType="{x:Type local:WorkItemInfoView}">
+                <local:WorkItemInfoView />
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>

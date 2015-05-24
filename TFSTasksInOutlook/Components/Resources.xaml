@@ -1,0 +1,62 @@
+﻿<ResourceDictionary
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:Converters">
+  <Style x:Key="TaskDataItemTypeRect" TargetType="{x:Type Rectangle}">
+    <Style.Triggers>
+      <DataTrigger Binding="{Binding ItemType}" Value="Bug">
+        <Setter Property="Fill" Value="Red" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding ItemType}" Value="Task">
+        <Setter Property="Fill" Value="Green" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+
+  <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+  <converters:BooleanInverterConverter x:Key="BoolInv"/>
+  <converters:ValueConverterGroup x:Key="InvertAndVisibilitate">
+    <converters:BooleanInverterConverter/>
+    <BooleanToVisibilityConverter/>
+  </converters:ValueConverterGroup>
+
+  <Style x:Key="ListBoxItemBase" TargetType="{x:Type ListBoxItem}">
+    <Style.Triggers>
+      <Trigger Property="IsSelected" Value="True">
+        <Setter Property="Foreground" Value="Black" />
+      </Trigger>
+      <Trigger Property="IsFocused" Value="True">
+        <Setter Property="Foreground" Value="Black" />
+      </Trigger>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Cursor" Value="Hand" />
+      </Trigger>
+    </Style.Triggers>
+    <Style.Resources>
+      <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="LightBlue" />
+    </Style.Resources>
+  </Style>
+
+  <ContextMenu x:Key="FavContextMenu">
+    <MenuItem Header="Remove from favorites" x:Name="FavRemove"
+            Command="{Binding PlacementTarget.Tag.DataContext.RemoveFavorite, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}}"
+            CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+  </ContextMenu>
+
+  <ContextMenu x:Key="TaskContextMenu">
+    <MenuItem Header="Copy task info to clipboard" x:Name="TaskCopyToClipboard"
+            Command="{Binding PlacementTarget.Tag.DataContext.CopyToClipboard, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}}"
+            CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+  </ContextMenu>
+
+  <Style x:Key="FavListBoxItem" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource ListBoxItemBase}">
+    <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
+    <Setter Property="ContextMenu" Value="{StaticResource FavContextMenu}" />
+  </Style>
+
+  <Style x:Key="TasksListBoxItem" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource ListBoxItemBase}">
+    <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
+    <Setter Property="ContextMenu" Value="{StaticResource TaskContextMenu}" />
+  </Style>
+
+</ResourceDictionary>
