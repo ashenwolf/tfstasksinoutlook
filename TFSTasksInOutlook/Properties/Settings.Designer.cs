@@ -32,5 +32,17 @@ namespace TFSTasksInOutlook.Properties {
                 return ((string)(this["TimesheetReportUrl"]));
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Fake {
+            get {
+                return ((string)(this["Fake"]));
+            }
+            set {
+                this["Fake"] = value;
+            }
+        }
     }
 }
