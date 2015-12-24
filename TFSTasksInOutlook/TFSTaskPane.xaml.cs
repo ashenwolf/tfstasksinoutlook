@@ -1,38 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using TFSTasksInOutlook.Common;
 
 namespace TFSTasksInOutlook
   {
   /// <summary>
   /// Interaction logic for TFSTaskPane.xaml
   /// </summary>
-  public partial class TFSTaskPane : UserControl, ITFSTaskPaneView
+  public partial class TfsTaskPane : UserControl, ITfsTaskPaneView
     {
-    private IObservable<Unit> onConnectToTfs;
-    private IObservable<Unit> onGoToReportClicked;
-    private IObservable<WorkItemFilter> onTaskFilterChanged;
-    private IObservable<WorkItemInfo> onTaskDoubleClicked;
-    private IObservable<long> onAddFavTask;
-    private IObservable<WorkItemInfo> onRemoveFavorite;
-    private IObservable<WorkItemInfo> onCopyToClipboard;
+    private readonly IObservable<Unit> _onConnectToTfs;
+    private readonly IObservable<Unit> _onGoToReportClicked;
+    private readonly IObservable<WorkItemFilter> _onTaskFilterChanged;
+    private readonly IObservable<WorkItemInfo> _onTaskDoubleClicked;
+    private readonly IObservable<long> _onAddFavTask;
+    private readonly IObservable<WorkItemInfo> _onRemoveFavorite;
+    private readonly IObservable<WorkItemInfo> _onCopyToClipboard;
+    private readonly IObservable<IDataObject> _onDropItem;
 
-    private ICommand removeFavorite;
-    private ICommand copyToClipboard;
+    private ICommand _removeFavorite;
+    private ICommand _copyToClipboard;
 
     public class WorkItemActionEventArgs: EventArgs {
       public WorkItemActionEventArgs(WorkItemInfo item) { Item = item; }
@@ -43,10 +36,10 @@ namespace TFSTasksInOutlook
     public event EventHandler<WorkItemActionEventArgs> OnCopyToClipboardEvent;
 
     public static readonly DependencyProperty BusyProperty =
-      DependencyProperty.Register("Busy", typeof(bool), typeof(TFSTaskPane));
+      DependencyProperty.Register("Busy", typeof(bool), typeof(TfsTaskPane));
 
     public static readonly DependencyProperty BusyAddFavProperty =
-      DependencyProperty.Register("BusyAddFav", typeof(bool), typeof(TFSTaskPane));
+      DependencyProperty.Register("BusyAddFav", typeof(bool), typeof(TfsTaskPane));
 
     public bool BusyGetTasks
       {
@@ -64,7 +57,7 @@ namespace TFSTasksInOutlook
       {
       get
         {
-        return removeFavorite ?? (removeFavorite = new DelegateCommand(null, p =>
+        return _removeFavorite ?? (_removeFavorite = new DelegateCommand(null, p =>
           {
             OnRemoveFavoriteEvent(this, new WorkItemActionEventArgs(p as WorkItemInfo));
           }));
@@ -75,99 +68,123 @@ namespace TFSTasksInOutlook
       {
       get
         {
-        return copyToClipboard ?? (copyToClipboard = new DelegateCommand(null, p =>
+        return _copyToClipboard ?? (_copyToClipboard = new DelegateCommand(null, p =>
         {
           OnCopyToClipboardEvent(this, new WorkItemActionEventArgs(p as WorkItemInfo));
         }));
         }
       }
 
-    public TFSTaskPane()
+    public TfsTaskPane()
       {
       InitializeComponent();
       BusyGetTasks = false;
       BusyAddFav = false;
 
-      onConnectToTfs = Observable.FromEventPattern(ConnectToTFS, "Click").Select(_ => Unit.Default);
+      _onConnectToTfs = Observable.FromEventPattern(ConnectToTfs, "Click").Select(_ => Unit.Default);
 
-      onTaskFilterChanged = Observable.Merge(
-          Observable.FromEventPattern<SelectionChangedEventArgs>(TFSProjects, "SelectionChanged").Select(e => _GetCurrentFilter()),
+      _onTaskFilterChanged = Observable.Merge(
+          Observable.FromEventPattern<SelectionChangedEventArgs>(TfsProjects, "SelectionChanged").Select(e => _GetCurrentFilter()),
           Observable.FromEventPattern(RefreshButton, "Click").Select(e => _GetCurrentFilter()))
         .Where(f => f.Project != null)
         .Do(_ => SetBusyGetTasks(true));
 
-      onTaskDoubleClicked = Observable.Merge(
-          Observable.FromEventPattern<MouseButtonEventArgs>(TFSTasks, "MouseDoubleClick")
+      _onTaskDoubleClicked = Observable.Merge(
+          Observable.FromEventPattern<MouseButtonEventArgs>(TfsTasks, "MouseDoubleClick")
             .Select(e => ItemsControl.ContainerFromElement(e.Sender as ListBox, e.EventArgs.OriginalSource as DependencyObject) as ListBoxItem)
             .Where(item => item != null)
-            .Select(item => (WorkItemInfo)TFSTasks.ItemContainerGenerator.ItemFromContainer(item)),
+            .Select(item => (WorkItemInfo)TfsTasks.ItemContainerGenerator.ItemFromContainer(item)),
           Observable.FromEventPattern<MouseButtonEventArgs>(FavoriteTasks, "MouseDoubleClick")
             .Select(e => ItemsControl.ContainerFromElement(e.Sender as ListBox, e.EventArgs.OriginalSource as DependencyObject) as ListBoxItem)
             .Where(item => item != null)
             .Select(item => (WorkItemInfo)FavoriteTasks.ItemContainerGenerator.ItemFromContainer(item))
         );
 
-      onAddFavTask = Observable.Merge(
+      _onAddFavTask = Observable.Merge(
         Observable.FromEventPattern(AddFavTask, "Click").Select(_ => Unit.Default),
-        Observable.FromEventPattern<KeyEventArgs>(NewTaskID, "PreviewKeyDown").Where(e => e.EventArgs.Key == Key.Enter).Select(_ => Unit.Default))
-        .Where(e => NewTaskID.Text.Trim() != "" && NewTaskID.Text.Count() <= 12)
-        .Select(e => Convert.ToInt64(NewTaskID.Text))
-        .Do(_ => NewTaskID.Text = "");
+        Observable.FromEventPattern<KeyEventArgs>(NewTaskId, "PreviewKeyDown").Where(e => e.EventArgs.Key == Key.Enter).Select(_ => Unit.Default))
+        .Where(e => NewTaskId.Text.Trim() != "" && NewTaskId.Text.Count() <= 12)
+        .Select(e => Convert.ToInt64(NewTaskId.Text))
+        .Do(_ => NewTaskId.Text = "");
 
-      onGoToReportClicked = Observable.FromEventPattern(GoToReportWebsite, "Click").Select(_ => Unit.Default);
+      _onGoToReportClicked = Observable.FromEventPattern(GoToReportWebsite, "Click").Select(_ => Unit.Default);
 
-      onRemoveFavorite = Observable.FromEventPattern<WorkItemActionEventArgs>(this, "OnRemoveFavoriteEvent")
+      _onRemoveFavorite = Observable.FromEventPattern<WorkItemActionEventArgs>(this, "OnRemoveFavoriteEvent")
         .Where(e => e.EventArgs.Item != null)
         .Select(e => e.EventArgs.Item);
 
-      onCopyToClipboard = Observable.FromEventPattern<WorkItemActionEventArgs>(this, "OnCopyToClipboardEvent")
+      _onCopyToClipboard = Observable.FromEventPattern<WorkItemActionEventArgs>(this, "OnCopyToClipboardEvent")
         .Where(e => e.EventArgs.Item != null)
         .Select(e => e.EventArgs.Item);
+
+      Observable.FromEventPattern<DragEventArgs>(this, "DragOver")
+        .Select(e =>
+          {
+          if (e.EventArgs.Data.GetDataPresent(DataFormats.StringFormat))
+            {
+            string dataString = (string)e.EventArgs.Data.GetData(DataFormats.StringFormat);
+            e.EventArgs.Effects = DragDropEffects.Copy;
+            }
+          e.EventArgs.Handled = true;
+          return e;
+          });
+
+      _onDropItem = Observable.FromEventPattern<DragEventArgs>(this, "Drop")
+        .Do(e =>
+          {
+          Console.WriteLine(e.EventArgs.Data.ToString());
+          })
+        .Select(e => e.EventArgs.Data);
       }
 
     public IObservable<Unit> OnConnectToTfs()
       {
-      return onConnectToTfs;
+      return _onConnectToTfs;
       }
 
     public IObservable<Unit> OnGoToReport()
       {
-      return onGoToReportClicked;
+      return _onGoToReportClicked;
       }
 
     public IObservable<WorkItemFilter> OnTaskFilterChanged()
       {
-      return onTaskFilterChanged;
+      return _onTaskFilterChanged;
       }
 
     public IObservable<WorkItemInfo> OnTaskDoubleClicked()
       {
-      return onTaskDoubleClicked;
+      return _onTaskDoubleClicked;
       }
 
     public IObservable<long> OnAddFavTask()
       {
-      return onAddFavTask;
+      return _onAddFavTask;
+      }
+
+    public IObservable<IDataObject> OnDropItem()
+      {
+      return _onDropItem;
       }
 
     public IObservable<WorkItemInfo> OnRemoveFavorite()
       {
-      return onRemoveFavorite;
+      return _onRemoveFavorite;
       }
 
     public IObservable<WorkItemInfo> OnCopyToClipboard()
       {
-      return onCopyToClipboard;
+      return _onCopyToClipboard;
       }
 
     public void SetProjectsList(IEnumerable<string> projects)
       {
-      TFSProjects.ItemsSource = projects;
+      TfsProjects.ItemsSource = projects;
       }
 
     public void SetTasksList(IEnumerable<WorkItemInfo> tasks)
       {
-      TFSTasks.ItemsSource = tasks;
+      TfsTasks.ItemsSource = tasks;
       }
 
     public void SetFavTaskList(IEnumerable<WorkItemInfo> tasks)
@@ -183,14 +200,14 @@ namespace TFSTasksInOutlook
     public void SetBusyAddFav(bool busy)
       {
       BusyAddFav = busy;
-      if (!busy) NewTaskID.Focus();
+      if (!busy) NewTaskId.Focus();
       }
 
     private WorkItemFilter _GetCurrentFilter()
       {
       return new WorkItemFilter()
       {
-        Project = TFSProjects.SelectedItem != null ? TFSProjects.SelectedItem.ToString() : null,
+        Project = TfsProjects.SelectedItem != null ? TfsProjects.SelectedItem.ToString() : null,
         ShowTasks = ShowTasks.IsChecked.GetValueOrDefault(false),
         ShowBugs = ShowBugs.IsChecked.GetValueOrDefault(false),
         ShowProposed = ShowProposed.IsChecked.GetValueOrDefault(false),

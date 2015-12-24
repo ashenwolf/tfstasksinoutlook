@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using Microsoft.Office.Core;
 using TFSTasksInOutlook.Properties;
 using Office = Microsoft.Office.Core;
@@ -23,11 +20,11 @@ using Office = Microsoft.Office.Core;
 namespace TFSTasksInOutlook
   {
   [ComVisible(true)]
-  public class TFSTasks : Office.IRibbonExtensibility
+  public class TfsTasks : Office.IRibbonExtensibility
     {
-    private Office.IRibbonUI ribbon;
+    private Office.IRibbonUI _ribbon;
 
-    public TFSTasks()
+    public TfsTasks()
       {
       }
 
@@ -43,9 +40,9 @@ namespace TFSTasksInOutlook
     #region Ribbon Callbacks
     //Create callback methods here. For more information about adding callback methods, select the Ribbon XML item in Solution Explorer and then press F1
 
-    public void Ribbon_Load(Office.IRibbonUI ribbonUI)
+    public void Ribbon_Load(Office.IRibbonUI ribbonUi)
       {
-      this.ribbon = ribbonUI;
+      this._ribbon = ribbonUi;
       }
 
     public Bitmap Ribbon_GetImage(IRibbonControl control)

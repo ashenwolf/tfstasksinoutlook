@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TFSTasksInOutlook
+﻿namespace TFSTasksInOutlook
   {
   public class WorkItemInfo
     {

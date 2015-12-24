@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using Microsoft.TeamFoundation.Client;
-using Microsoft.TeamFoundation.Server;
 using Microsoft.TeamFoundation.WorkItemTracking.Client;
 
 namespace TFSTasksInOutlook
   {
-  class TFSProxy
+  class TfsProxy
     {
-    public class TFSServerData
+    public class TfsServerData
       {
-      public TFSServerData(string tfsUri, string[] tfsProjects)
+      public TfsServerData(string tfsUri, string[] tfsProjects)
         {
         TfsUri = tfsUri;
         TfsProjects = tfsProjects;
@@ -23,7 +21,7 @@ namespace TFSTasksInOutlook
       public string[] TfsProjects { get; private set; }
       }
 
-    public TFSServerData GetNewTfsServer()
+    public TfsServerData GetNewTfsServer()
       {
       using (TeamProjectPicker tpp = new TeamProjectPicker(TeamProjectPickerMode.MultiProject, false))
         {
@@ -31,7 +29,7 @@ namespace TFSTasksInOutlook
         if (result == DialogResult.OK)
           {
           System.Console.WriteLine("Selected Team Project Collection Uri: " + tpp.SelectedTeamProjectCollection.Uri);
-          return new TFSServerData(
+          return new TfsServerData(
             tpp.SelectedTeamProjectCollection.Uri.ToString(),
             tpp.SelectedProjects.Select(p => p.Name).ToArray());
           }

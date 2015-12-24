@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive;
-using System.Text;
+using System.Windows;
 
 namespace TFSTasksInOutlook
   {
-  interface ITFSTaskPaneView
+  interface ITfsTaskPaneView
     {
     IObservable<Unit> OnConnectToTfs();
     IObservable<Unit> OnGoToReport();
@@ -15,6 +14,7 @@ namespace TFSTasksInOutlook
     IObservable<long> OnAddFavTask();
     IObservable<WorkItemInfo> OnRemoveFavorite();
     IObservable<WorkItemInfo> OnCopyToClipboard();
+    IObservable<IDataObject> OnDropItem();
 
     void SetProjectsList(IEnumerable<string> projects);
     void SetTasksList(IEnumerable<WorkItemInfo> tasks);

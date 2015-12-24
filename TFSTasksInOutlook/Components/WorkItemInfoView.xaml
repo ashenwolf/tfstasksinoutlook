@@ -39,7 +39,7 @@
         <RowDefinition Height="*" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
-      <ToggleButton x:Name="changeButBorderedBlinky" Margin="2" Focusable="false"
+      <ToggleButton x:Name="ChangeButBorderedBlinky" Margin="2" Focusable="false"
                     Width="16" Height="16" Background="Transparent"
                     VerticalAlignment="Top" HorizontalAlignment="Right"
                     IsChecked="{Binding InFavorites}">
@@ -68,7 +68,7 @@
             </Setter>
             <Style.Triggers>
               <Trigger Property="IsChecked" Value="False">
-                 <Setter Property="Image.Opacity" Value="0.15"></Setter>
+                 <Setter Property="Image.Opacity" Value="0.15" />
               </Trigger>
             </Style.Triggers>
           </Style>

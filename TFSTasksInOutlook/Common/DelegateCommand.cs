@@ -1,27 +1,27 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace TFSTasksInOutlook
+namespace TFSTasksInOutlook.Common
   {
-  class DelegateCommand : ICommand
+  internal class DelegateCommand : ICommand
     {
-    Predicate<object> canExecute;
-    Action<object> execute;
-    public DelegateCommand(Predicate<object> _canexecute, Action<object> _execute)
+    readonly Predicate<object> _canExecute;
+    readonly Action<object> _execute;
+    public DelegateCommand(Predicate<object> canexecute, Action<object> execute)
       : this()
       {
-      canExecute = _canexecute;
-      execute = _execute;
+      _canExecute = canexecute;
+      _execute = execute;
       }
     public DelegateCommand() { }
     public bool CanExecute(object parameter)
       {
-      return canExecute == null ? true : canExecute(parameter);
+      return _canExecute == null || _canExecute(parameter);
       }
     public event EventHandler CanExecuteChanged;
     public void Execute(object parameter)
       {
-      execute(parameter);
+      _execute(parameter);
       }
     }
   }

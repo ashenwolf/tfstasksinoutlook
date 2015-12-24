@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,7 +8,7 @@ namespace Extensions
   {
   public static class Masking
     {
-    private static readonly DependencyPropertyKey _maskExpressionPropertyKey = DependencyProperty.RegisterAttachedReadOnly("MaskExpression",
+    private static readonly DependencyPropertyKey MaskExpressionPropertyKey = DependencyProperty.RegisterAttachedReadOnly("MaskExpression",
             typeof(Regex),
             typeof(Masking),
             new FrameworkPropertyMetadata());
@@ -27,7 +24,7 @@ namespace Extensions
     /// <summary>
     /// Identifies the <see cref="MaskExpression"/> dependency property.
     /// </summary>
-    public static readonly DependencyProperty MaskExpressionProperty = _maskExpressionPropertyKey.DependencyProperty;
+    public static readonly DependencyProperty MaskExpressionProperty = MaskExpressionPropertyKey.DependencyProperty;
 
     /// <summary>
     /// Gets the mask for a given <see cref="TextBox"/>.
@@ -91,7 +88,7 @@ namespace Extensions
 
     private static void SetMaskExpression(TextBox textBox, Regex regex)
       {
-      textBox.SetValue(_maskExpressionPropertyKey, regex);
+      textBox.SetValue(MaskExpressionPropertyKey, regex);
       }
 
     private static void OnMaskChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
