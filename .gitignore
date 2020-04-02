@@ -4,3 +4,4 @@ obj/
 *.suo
 TFSTasksInOutlook/publish/
 TFSTasksInOutlook/TFSTasksInOutlook/
+/.vs
