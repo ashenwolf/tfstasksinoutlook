@@ -390,6 +390,7 @@
     </Compile>
     <Compile Include="Common\ValueConverterGroup.cs" />
     <Compile Include="TFS\WorkItemFilterQueryBuilder.cs" />
+    <Compile Include="WorkItemActionEventArgs.cs" />
     <Compile Include="WorkItemFilter.cs" />
     <Compile Include="WorkItemInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">

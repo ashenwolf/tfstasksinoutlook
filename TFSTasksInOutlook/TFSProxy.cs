@@ -43,7 +43,7 @@ namespace TFSTasksInOutlook
         {
             var q = WorkItemFilterQueryBuilder.Build(s);
 
-            return _QueryAll(tfsUri, q);
+            return _QueryAll(tfsUri, q,s.ShowStartAndFinishDates);
         }
 
         public WorkItemInfo GetTaskInfo(string tfsUri, long id)
@@ -55,22 +55,25 @@ namespace TFSTasksInOutlook
         public IEnumerable<WorkItemInfo> GetTasksByIds(string tfsUri, IEnumerable<string> ids)
         {
             var q = @"Select [Id], [Title], [Completed Work], [System.TeamProject] From WorkItems Where [Id] IN (" + String.Join(", ", ids) + ") ";
-            return _QueryAll(tfsUri, q);
+            return _QueryAll(tfsUri, q,false);
         }
 
-        private WorkItemInfo _WorkItemToWorkItemInfo(WorkItem wi)
+        private WorkItemInfo _WorkItemToWorkItemInfo(WorkItem wi,bool includeStartAndFinishDates)
         {
+            // Even if the Start and Finish dates are not in the SELECT part of query, its fetching those values. So control based on parameter.
             return new WorkItemInfo()
             {
                 Id = wi.Id,
                 Title = wi.Title,
                 CompletedWork = wi.Fields["Completed Work"].Value != null ? Convert.ToDouble(wi.Fields["Completed Work"].Value) : 0.0,
                 ItemType = wi.Type.Name,
-                Project = wi.Project.Name
+                Project = wi.Project.Name,
+                StartDate = includeStartAndFinishDates? (wi.Fields["Start Date"].Value == null ? null : Convert.ToDateTime(wi.Fields["Start Date"].Value) as DateTime? ):null,
+                FinishDate = includeStartAndFinishDates ? (wi.Fields["Finish Date"].Value == null ? null : Convert.ToDateTime(wi.Fields["Finish Date"].Value) as DateTime?):null
             };
         }
 
-        private IEnumerable<WorkItemInfo> _QueryAll(string tfsUri, string wiql)
+        private IEnumerable<WorkItemInfo> _QueryAll(string tfsUri, string wiql, bool includeStartAndFinishDates)
         {
             var tasks = new List<WorkItemInfo>();
             try
@@ -81,7 +84,7 @@ namespace TFSTasksInOutlook
                 foreach (WorkItem wi in queryResults)
                 {
                     if (wi.Type.Name.Equals("Bug", StringComparison.InvariantCultureIgnoreCase) || wi.Type.Name.Equals("Task", StringComparison.InvariantCultureIgnoreCase))
-                        tasks.Add(_WorkItemToWorkItemInfo(wi));
+                        tasks.Add(_WorkItemToWorkItemInfo(wi, includeStartAndFinishDates));
                 }
             }
             catch (Microsoft.TeamFoundation.TeamFoundationServiceUnavailableException) { }
@@ -110,7 +113,7 @@ namespace TFSTasksInOutlook
 
         private WorkItemInfo _QueryOne(string tfsUri, string wiql)
         {
-            return _QueryAll(tfsUri, wiql).FirstOrDefault();
+            return _QueryAll(tfsUri, wiql,false).FirstOrDefault();
         }
     }
 }
