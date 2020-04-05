@@ -128,6 +128,20 @@
                     </ListBox>
                 </Grid>
             </TabItem>
+            <TabItem Header="Settings">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <CheckBox x:Name="ShowStartAndFinishDatesCheckBox" Grid.Column="1">Show Start and Finish Dates in Project Items</CheckBox>
+                </Grid>
+            </TabItem>
         </TabControl>
 
         <Button Grid.Row="6" x:Name="GoToReportWebsite" Content="Go to report website" Margin="0,4,0,0"/>

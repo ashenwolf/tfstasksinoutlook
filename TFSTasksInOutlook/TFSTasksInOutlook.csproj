@@ -323,9 +323,6 @@
     <Reference Include="System.Reactive, Version=4.3.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Reactive.4.3.2\lib\net46\System.Reactive.dll</HintPath>
     </Reference>
-    <Reference Include="System.Reactive.Interfaces">
-      <HintPath>..\packages\Rx-Interfaces.2.2.5\lib\net40\System.Reactive.Interfaces.dll</HintPath>
-    </Reference>
     <Reference Include="System.Reflection.Metadata, Version=1.4.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Reflection.Metadata.1.5.0\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
     </Reference>
@@ -393,6 +390,7 @@
     </Compile>
     <Compile Include="Common\ValueConverterGroup.cs" />
     <Compile Include="TFS\WorkItemFilterQueryBuilder.cs" />
+    <Compile Include="WorkItemActionEventArgs.cs" />
     <Compile Include="WorkItemFilter.cs" />
     <Compile Include="WorkItemInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">

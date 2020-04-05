@@ -7,13 +7,18 @@ namespace TFSTasksInOutlook.TFS
     {
         public static string Build(WorkItemFilter filter)
         {
-            return @"Select [Id], [Title], [Completed Work], [System.TeamProject] From WorkItems " +
+            return $@"Select [Id], [Title], [Completed Work], [System.TeamProject]{_GetStartAndFinishDates(filter)} From WorkItems " +
          @"Where " +
          @"[System.TeamProject] = '" + filter.Project + "' And [System.AssignedTo] = @Me " +
          WorkItemFilterQueryBuilder._GetItemTypeFilter(filter) +
          WorkItemFilterQueryBuilder._GetStateFilter(filter) +
          WorkItemFilterQueryBuilder._GetStartAndFinishDateFilter(filter) +
          @"Order By [Work Item Type] ";
+        }
+
+        private static string _GetStartAndFinishDates(WorkItemFilter filter)
+        {
+            return filter.ShowStartAndFinishDates ? ", [Start Date], [Finish Date]" : string.Empty;
         }
 
         private static string _GetStartAndFinishDateFilter(WorkItemFilter filter)

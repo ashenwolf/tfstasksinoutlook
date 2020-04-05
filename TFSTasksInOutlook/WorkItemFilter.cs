@@ -11,7 +11,7 @@ namespace TFSTasksInOutlook
         public bool ShowActive { get; set; }
         public bool ShowResolved { get; set; }
         public bool ShowClosed { get; set; }
-
+        public bool ShowStartAndFinishDates { get; set; }
         public DateTime? FinishDate { get; set; }
         public DateTime? StartDate { get; set; }
     }

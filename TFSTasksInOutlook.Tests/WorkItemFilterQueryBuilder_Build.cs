@@ -32,6 +32,24 @@ namespace TFSTasksInOutlook.Tests
             Assert.AreEqual(expected, actual);
         }
         [TestMethod]
+        public void WhenFilterHasAllValuesButStartAndFinishDatesAndShowsStartAndFinishDatesSetToTrue_Success()
+        {
+            WorkItemFilter filter = new WorkItemFilter()
+            {
+                Project = "TestTfsProj",
+                ShowTasks = true,
+                ShowBugs = false,
+                ShowProposed = false,
+                ShowActive = true,
+                ShowResolved = true,
+                ShowClosed = false,
+                ShowStartAndFinishDates = true
+            };
+            string actual = WorkItemFilterQueryBuilder.Build(filter);
+            string expected = "Select [Id], [Title], [Completed Work], [System.TeamProject], [Start Date], [Finish Date] From WorkItems Where [System.TeamProject] = 'TestTfsProj' And [System.AssignedTo] = @Me And ([Work Item Type] = 'Task') And ([State] = 'Active' Or [State] = 'Resolved') Order By [Work Item Type] ";
+            Assert.AreEqual(expected, actual);
+        }
+        [TestMethod]
         public void WhenFilterHasAllValues_Success()
         {
             WorkItemFilter filter = new WorkItemFilter()

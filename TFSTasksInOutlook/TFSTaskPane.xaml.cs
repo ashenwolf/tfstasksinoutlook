@@ -27,12 +27,6 @@ namespace TFSTasksInOutlook
         private ICommand _removeFavorite;
         private ICommand _copyToClipboard;
 
-        public class WorkItemActionEventArgs : EventArgs
-        {
-            public WorkItemActionEventArgs(WorkItemInfo item) { Item = item; }
-            public WorkItemInfo Item { get; private set; }
-        }
-
         public event EventHandler<WorkItemActionEventArgs> OnRemoveFavoriteEvent;
         public event EventHandler<WorkItemActionEventArgs> OnCopyToClipboardEvent;
 
@@ -216,6 +210,7 @@ namespace TFSTasksInOutlook
                 ShowActive = ShowActive.IsChecked.GetValueOrDefault(false),
                 ShowResolved = ShowResolved.IsChecked.GetValueOrDefault(false),
                 ShowClosed = ShowClosed.IsChecked.GetValueOrDefault(false),
+                ShowStartAndFinishDates = ShowStartAndFinishDatesCheckBox.IsChecked.Value
             };
         }
         private WorkItemFilter _GetCurrentFilterForToday()
