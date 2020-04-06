@@ -132,14 +132,17 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
 
-                    <CheckBox x:Name="ShowStartAndFinishDatesCheckBox" Grid.Column="1">Show Start and Finish Dates in Project Items</CheckBox>
+                    
+                    <CheckBox x:Name="ShowStartAndFinishDatesCheckBox" 
+                              Grid.Row="0" Margin="0,2"
+                              IsChecked="{Binding Source={x:Static properties:Settings.Default},Path=ShowStartAndFinishDates,Mode=TwoWay}"
+                              >Show Start and Finish Dates in Project Items</CheckBox>
+                    <CheckBox x:Name="ShowOnlyWorkItemIdInCalendarCheckBox" 
+                              Grid.Row="1" Margin="0,2"
+                              IsChecked="{Binding Source={x:Static properties:Settings.Default},Path=ShowOnlyWorkItemIdInCalendar,Mode=TwoWay}">Show only work item id in calendar</CheckBox>
                 </Grid>
             </TabItem>
         </TabControl>
