@@ -44,5 +44,17 @@ namespace TFSTasksInOutlook.Properties {
                 this["Fake"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowOnlyWorkItemIdInCalendar {
+            get {
+                return ((bool)(this["ShowOnlyWorkItemIdInCalendar"]));
+            }
+            set {
+                this["ShowOnlyWorkItemIdInCalendar"] = value;
+            }
+        }
     }
 }

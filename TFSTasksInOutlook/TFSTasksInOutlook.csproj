@@ -375,6 +375,7 @@
     can be found.
   -->
   <ItemGroup>
+    <Compile Include="Calendar\CalendarManager.cs" />
     <Compile Include="Common\DelegateCommand.cs" />
     <Compile Include="Components\FavWorkItemView.xaml.cs">
       <DependentUpon>FavWorkItemView.xaml</DependentUpon>
@@ -468,6 +469,7 @@
   <ItemGroup>
     <Resource Include="Resources\star.png" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
