@@ -131,6 +131,17 @@ namespace TFSTasksInOutlook
                     Console.WriteLine(e.EventArgs.Data.ToString());
                 })
               .Select(e => e.EventArgs.Data);
+            #region Settings tab
+            // Cannot capture outlook shutdown event. So save when things change
+            // https://docs.microsoft.com/en-us/previous-versions/office/developer/office-2010/ee720183(v=office.14)?redirectedfrom=MSDN#add-in-shutdown-changes-in-outlook-2010
+            Observable.Merge(
+            Observable.FromEventPattern<EventArgs>(ShowStartAndFinishDatesCheckBox, "Click"),
+            Observable.FromEventPattern<EventArgs>(ShowOnlyWorkItemIdInCalendarCheckBox, "Click"))
+                .Subscribe(e =>
+            {
+                Properties.Settings.Default.Save();
+            });
+            #endregion
         }
 
         public IObservable<Unit> OnConnectToTfs()
