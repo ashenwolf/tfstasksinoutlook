@@ -8,19 +8,27 @@ namespace TFSTasksInOutlook.Calendar
 {
     class CalendarManager
     {
-        #region Internal APIs
-        internal static void CreateItemInCalendar(WorkItemInfo item)
+        #region Internal APIs        
+        /// <summary>
+        /// Creates the or updates work item in calendar.
+        /// </summary>
+        /// <param name="item">The TFS work item as <see cref="WorkItemInfo"/>.</param>
+        /// <param name="useStartAndFinishDatesofWorkItemToCreateCalendarEntries">if set to <c>true</c> [use start and finish dates of work item to create calendar entries].</param>
+        /// <remarks> The <paramref name="useStartAndFinishDatesofWorkItemToCreateCalendarEntries"/> only affect new items not the updates. </remarks>
+        internal static void CreateOrUpdatesItemInCalendar(WorkItemInfo item,bool useStartAndFinishDatesofWorkItemToCreateCalendarEntries)
         {
             var expl = Globals.ThisAddIn.Application.ActiveExplorer();
-            var view = expl.CurrentView as View;
-            if (view == null || view.ViewType != OlViewType.olCalendarView) return;
+            
+            var calView = expl.CurrentView as CalendarView;
+            
+            if (calView == null || calView.ViewType != OlViewType.olCalendarView) return;
             if (expl.Selection.Count > 0)
             {
                 _UpdateItemsInCalendar(item, expl);
             }
             else
             {
-                _CreateNewItemsInCalendar(item, view, expl);
+                _CreateNewItemsInCalendar(item, calView, expl,useStartAndFinishDatesofWorkItemToCreateCalendarEntries);
             }
         }
         #endregion
@@ -60,15 +68,24 @@ namespace TFSTasksInOutlook.Calendar
                 return $"#{wi.Id} {wi.Title}";
         }
 
-        private static void _CreateNewItemsInCalendar(WorkItemInfo item, View view, Explorer explorer)
+        private static void _CreateNewItemsInCalendar(WorkItemInfo item, 
+                                                        CalendarView calView, 
+                                                        Explorer explorer,
+                                                        bool useStartAndFinishDatesofWorkItemToCreateCalendarEntries)
         {
-            var minDate = DateTime.Today - TimeSpan.FromDays(365);
-            var calView = view as CalendarView;
-            if (calView == null) return;
-            var dstart = calView.SelectedStartTime;
-            var dend = calView.SelectedEndTime;
+            DateTime dstart, dend;
+            if (_canUseStartAndEndTimesFromWorkItem(item) && useStartAndFinishDatesofWorkItemToCreateCalendarEntries)
+            {
+                dstart = item.StartDate.Value;
+                dend = item.FinishDate.Value;
+            }
+            else
+            {
+                dstart = calView.SelectedStartTime;
+                dend = calView.SelectedEndTime;
+            }
 
-            if (dstart <= minDate || dend <= minDate)
+            if (_IsStartOrEndDates1YearAgo(dstart, dend))
                 return;
 
             Folder folder = explorer.CurrentFolder as Folder;
@@ -121,6 +138,17 @@ namespace TFSTasksInOutlook.Calendar
 
                   dstart = i.End;
               });
+        }
+
+        private static bool _IsStartOrEndDates1YearAgo(DateTime dstart, DateTime dend)
+        {
+            DateTime date1YearAgo = DateTime.Today - TimeSpan.FromDays(365);
+            return dstart <= date1YearAgo || dend <= date1YearAgo;
+        }
+
+        private static bool _canUseStartAndEndTimesFromWorkItem(WorkItemInfo item)
+        {
+            return item.StartDate != null && item.FinishDate != null;
         }
         #endregion
     }
