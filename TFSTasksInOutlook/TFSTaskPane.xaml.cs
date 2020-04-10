@@ -15,10 +15,11 @@ namespace TFSTasksInOutlook
     /// </summary>
     public partial class TfsTaskPane : UserControl, ITfsTaskPaneView
     {
+        #region Properties and Commands
         private readonly IObservable<Unit> _onConnectToTfs;
         private readonly IObservable<Unit> _onGoToReportClicked;
         private readonly IObservable<WorkItemFilter> _onTaskFilterChanged;
-        private readonly IObservable<WorkItemInfo> _onTaskDoubleClicked;
+        private readonly IObservable<IEnumerable<WorkItemInfo>> _onAddTasksToCalendar;
         private readonly IObservable<long> _onAddFavTask;
         private readonly IObservable<WorkItemInfo> _onRemoveFavorite;
         private readonly IObservable<WorkItemInfo> _onCopyToClipboard;
@@ -69,7 +70,9 @@ namespace TFSTasksInOutlook
                 }));
             }
         }
+        #endregion
 
+        #region constructor
         public TfsTaskPane()
         {
             InitializeComponent();
@@ -85,17 +88,18 @@ namespace TFSTasksInOutlook
               .Where(f => f.Project != null)
               .Do(_ => SetBusyGetTasks(true));
 
-            _onTaskDoubleClicked = Observable.Merge(
-                Observable.FromEventPattern<MouseButtonEventArgs>(TfsTasks, "MouseDoubleClick")
-                  .Select(e => ItemsControl.ContainerFromElement(e.Sender as ListBox, e.EventArgs.OriginalSource as DependencyObject) as ListBoxItem)
-                  .Where(item => item != null)
-                  .Select(item => (WorkItemInfo)TfsTasks.ItemContainerGenerator.ItemFromContainer(item)),
+            _onAddTasksToCalendar = Observable.Merge(
                 Observable.FromEventPattern<MouseButtonEventArgs>(FavoriteTasks, "MouseDoubleClick")
-                  .Select(e => ItemsControl.ContainerFromElement(e.Sender as ListBox, e.EventArgs.OriginalSource as DependencyObject) as ListBoxItem)
-                  .Where(item => item != null)
-                  .Select(item => (WorkItemInfo)FavoriteTasks.ItemContainerGenerator.ItemFromContainer(item))
-              );
-
+                    .Select(e => ItemsControl.ContainerFromElement(e.Sender as ListBox, e.EventArgs.OriginalSource as DependencyObject) as ListBoxItem)
+                    .Where(item => item != null)
+                    .Select(item => Enumerable.Repeat(FavoriteTasks.ItemContainerGenerator.ItemFromContainer(item) as WorkItemInfo, 1)),
+                Observable.FromEventPattern<MouseButtonEventArgs>(TfsTasks, "MouseDoubleClick")
+                    .Select(e => ItemsControl.ContainerFromElement(e.Sender as ListBox, e.EventArgs.OriginalSource as DependencyObject) as ListBoxItem)
+                    .Where(item => item != null)
+                    .Select(item => Enumerable.Repeat(TfsTasks.ItemContainerGenerator.ItemFromContainer(item) as WorkItemInfo, 1)),
+                Observable.FromEventPattern(AddAllWorkItemsToCalendar, "Click")
+                    .Select(e => TfsTasks.ItemsSource as IEnumerable<WorkItemInfo>)
+                );
             _onAddFavTask = Observable.Merge(
               Observable.FromEventPattern(AddFavTask, "Click").Select(_ => Unit.Default),
               Observable.FromEventPattern<KeyEventArgs>(NewTaskId, "PreviewKeyDown").Where(e => e.EventArgs.Key == Key.Enter).Select(_ => Unit.Default))
@@ -144,73 +148,65 @@ namespace TFSTasksInOutlook
             });
             #endregion
         }
+        #endregion
 
-        public IObservable<Unit> OnConnectToTfs()
+        #region ITfsTaskPaneView implementation
+        IObservable<Unit> ITfsTaskPaneView.OnConnectToTfs()
         {
             return _onConnectToTfs;
         }
-
-        public IObservable<Unit> OnGoToReport()
+        IObservable<Unit> ITfsTaskPaneView.OnGoToReport()
         {
             return _onGoToReportClicked;
         }
-
-        public IObservable<WorkItemFilter> OnTaskFilterChanged()
+        IObservable<WorkItemFilter> ITfsTaskPaneView.OnTaskFilterChanged()
         {
             return _onTaskFilterChanged;
         }
-
-        public IObservable<WorkItemInfo> OnTaskDoubleClicked()
+        IObservable<IEnumerable<WorkItemInfo>> ITfsTaskPaneView.OnAddTasksToCalendar()
         {
-            return _onTaskDoubleClicked;
+            return _onAddTasksToCalendar;
         }
-
-        public IObservable<long> OnAddFavTask()
+        IObservable<long> ITfsTaskPaneView.OnAddFavTask()
         {
             return _onAddFavTask;
         }
-
-        public IObservable<IDataObject> OnDropItem()
+        IObservable<IDataObject> ITfsTaskPaneView.OnDropItem()
         {
             return _onDropItem;
         }
-
-        public IObservable<WorkItemInfo> OnRemoveFavorite()
+        IObservable<WorkItemInfo> ITfsTaskPaneView.OnRemoveFavorite()
         {
             return _onRemoveFavorite;
         }
-
-        public IObservable<WorkItemInfo> OnCopyToClipboard()
+        IObservable<WorkItemInfo> ITfsTaskPaneView.OnCopyToClipboard()
         {
             return _onCopyToClipboard;
         }
-
-        public void SetProjectsList(IEnumerable<string> projects)
+        void ITfsTaskPaneView.SetProjectsList(IEnumerable<string> projects)
         {
             TfsProjects.ItemsSource = projects;
         }
-
-        public void SetTasksList(IEnumerable<WorkItemInfo> tasks)
+        void ITfsTaskPaneView.SetTasksList(IEnumerable<WorkItemInfo> tasks)
         {
             TfsTasks.ItemsSource = tasks;
         }
-
-        public void SetFavTaskList(IEnumerable<WorkItemInfo> tasks)
+        void ITfsTaskPaneView.SetFavTaskList(IEnumerable<WorkItemInfo> tasks)
         {
             FavoriteTasks.ItemsSource = tasks;
         }
-
         public void SetBusyGetTasks(bool busy)
         {
             BusyGetTasks = busy;
         }
-
-        public void SetBusyAddFav(bool busy)
+        void ITfsTaskPaneView.SetBusyAddFav(bool busy)
         {
             BusyAddFav = busy;
             if (!busy) NewTaskId.Focus();
         }
+        #endregion
 
+        #region Private methods
         private WorkItemFilter _GetCurrentFilter()
         {
             return new WorkItemFilter()
@@ -232,5 +228,6 @@ namespace TFSTasksInOutlook
             filter.FinishDate = DateTime.Today.AddDays(1).AddSeconds(-1);
             return filter;
         }
+        #endregion
     }
 }

@@ -146,9 +146,17 @@ namespace TFSTasksInOutlook.Calendar
             return dstart <= date1YearAgo || dend <= date1YearAgo;
         }
 
-        private static bool _canUseStartAndEndTimesFromWorkItem(WorkItemInfo item)
+        /// <summary>
+        /// Determines whether this instance of <paramref name="workItem"/>'s start and end times can be used for calendar.
+        /// </summary>
+        /// <param name="workItem">The workItem.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance [can use start and end times from work item] the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>If the tasks spans more than 1 day, do to use it to clutter the calendar.</remarks>
+        private static bool _canUseStartAndEndTimesFromWorkItem(WorkItemInfo workItem)
         {
-            return item.StartDate != null && item.FinishDate != null;
+            return workItem.StartDate != null && workItem.FinishDate != null && workItem.StartDate.Value.Date == workItem.FinishDate.Value.Date;
         }
         #endregion
     }
