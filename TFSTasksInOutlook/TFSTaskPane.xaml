@@ -68,6 +68,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <Grid Grid.Row="0" HorizontalAlignment="Stretch">
@@ -126,6 +127,22 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
+                    <!--Added only for tasks list as favorites are already handled each item than a bulk insert here.-->
+                    <Button x:Name="AddAllWorkItemsToCalendar" 
+                            Grid.Row="5" 
+                            Content="Add all work items to calendar" 
+                            IsEnabled="{Binding ElementName=UseStartAndFinishDatesofWorkItemToCreateCalendarEntriesCheckBox,Path=IsChecked}"
+                            ToolTip="Enabled only when 'Use Start and Finish dates of work item to create calendar entries' in settings tab is checked">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=TfsTasks,Path=ItemsSource}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </Grid>
             </TabItem>
             <TabItem Header="Settings">
@@ -136,7 +153,7 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    
+
                     <CheckBox x:Name="ShowStartAndFinishDatesCheckBox" 
                               Grid.Row="0" Margin="0,2"
                               IsChecked="{Binding Source={x:Static properties:Settings.Default},Path=ShowStartAndFinishDates,Mode=TwoWay}"
