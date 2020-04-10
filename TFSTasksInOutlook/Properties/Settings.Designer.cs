@@ -68,5 +68,17 @@ namespace TFSTasksInOutlook.Properties {
                 this["ShowStartAndFinishDates"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseStartAndFinishDatesofWorkItemToCreateCalendarEntries {
+            get {
+                return ((bool)(this["UseStartAndFinishDatesofWorkItemToCreateCalendarEntries"]));
+            }
+            set {
+                this["UseStartAndFinishDatesofWorkItemToCreateCalendarEntries"] = value;
+            }
+        }
     }
 }

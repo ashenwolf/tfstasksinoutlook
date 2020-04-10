@@ -56,7 +56,7 @@ namespace TFSTasksInOutlook
                     _paneView.SetBusyGetTasks(false);
                 });
 
-            _paneView.OnTaskDoubleClicked().Subscribe(CalendarManager.CreateItemInCalendar);
+            _paneView.OnTaskDoubleClicked().Subscribe(wi=> CalendarManager.CreateOrUpdatesItemInCalendar(wi,Properties.Settings.Default.UseStartAndFinishDatesofWorkItemToCreateCalendarEntries));
 
             _paneView.OnAddFavTask()
               .Where(id => _favoriteWorkItems.All(wi => wi.Id != Convert.ToInt64(id)))

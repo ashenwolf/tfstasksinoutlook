@@ -133,6 +133,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     
@@ -143,6 +144,11 @@
                     <CheckBox x:Name="ShowOnlyWorkItemIdInCalendarCheckBox" 
                               Grid.Row="1" Margin="0,2"
                               IsChecked="{Binding Source={x:Static properties:Settings.Default},Path=ShowOnlyWorkItemIdInCalendar,Mode=TwoWay}">Show only work item id in calendar</CheckBox>
+                    <CheckBox x:Name="UseStartAndFinishDatesofWorkItemToCreateCalendarEntriesCheckBox"
+                              Grid.Row="2" Margin="0,2"
+                              IsChecked="{Binding Source={x:Static properties:Settings.Default},Path=UseStartAndFinishDatesofWorkItemToCreateCalendarEntries,Mode=TwoWay}"
+                              Content="Use Start and Finish dates of work item to create calendar entries"
+                              />
                 </Grid>
             </TabItem>
         </TabControl>

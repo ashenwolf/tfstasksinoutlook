@@ -136,7 +136,8 @@ namespace TFSTasksInOutlook
             // https://docs.microsoft.com/en-us/previous-versions/office/developer/office-2010/ee720183(v=office.14)?redirectedfrom=MSDN#add-in-shutdown-changes-in-outlook-2010
             Observable.Merge(
             Observable.FromEventPattern<EventArgs>(ShowStartAndFinishDatesCheckBox, "Click"),
-            Observable.FromEventPattern<EventArgs>(ShowOnlyWorkItemIdInCalendarCheckBox, "Click"))
+            Observable.FromEventPattern<EventArgs>(ShowOnlyWorkItemIdInCalendarCheckBox, "Click"),
+            Observable.FromEventPattern<EventArgs>(UseStartAndFinishDatesofWorkItemToCreateCalendarEntriesCheckBox, "Click"))
                 .Subscribe(e =>
             {
                 Properties.Settings.Default.Save();
